@@ -10,7 +10,7 @@ Loadcell::Loadcell(int dout_pin, int sck_pin, float calibration_factor) {
     _loadcell.tare();
 }
 
-double Loadcell::get_units_lbs() {
+double Loadcell::get_value_lbs() {
     double ounces = _loadcell.get_units(5) * 0.035274;
     return ounces;
 }

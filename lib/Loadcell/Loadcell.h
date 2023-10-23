@@ -22,9 +22,10 @@ class Loadcell{
         int _clk_pin;
         float _calibration_factor;
     public:
+        Loadcell(int pin); // TODO: placeholder for now
         Loadcell(int dout_pin, int sck_pin, float calibration_factor);
         void setup();
-        double get_units_lbs();   
+        double get_value_lbs();   
 };
 
 #endif
