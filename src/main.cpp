@@ -82,14 +82,14 @@ void setup() {
 	STATE = POWER_ON;  // <- uncomment this line to start in POWER_ON state
 	Serial.println("POWER_ON");
 	
-	while (1) {
-		if (digitalRead(START_PIN) == HIGH) break;
-	}
+	// while (1) {
+	// 	if (digitalRead(START_PIN) == HIGH) break;
+	// }
 	Serial.println("Time(us),Ducer1(psi), Ducer2(psi), Ducer3(psi), Loadcell(lbs)");
 	Serial.println("START");
 	START_TIME_US = micros();
 	print_serial_data();
-	// STATE = TEST; // <- For testing purposes
+	STATE = TEST; // <- For testing purposes
 }
 
 
@@ -152,7 +152,7 @@ void fail_state () {};
 void test_state() {
 	// testing serial plotter
 	Serial.println("i,math_func");
-	for (u_int32_t i=0; i<0xffff; i++) {
+	for (u_int32_t i=0; i<0xffffffff; i++) {
 		serial_data.tranducer1_data = i;
 		serial_data.tranducer2_data = i - 500;
 		serial_data.tranducer3_data = 1000 * sin(i * (PI / 180));
@@ -190,6 +190,7 @@ void loop() {
 		// TODO: remove this state
 		// for testing purposes only
 		case (TEST): 
+			Serial.println("IN TEST");
 			test_state();
 			STATE = FAIL;
 			break;
