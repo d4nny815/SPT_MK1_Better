@@ -1,0 +1,22 @@
+Circuit: * C:\Users\D4nny\Documents\school\spt\SPT_MK1_Better\ltspice\trying_estop.asc
+
+Direct Newton iteration for .op point succeeded.
+
+Date: Thu Oct 26 00:25:35 2023
+Total elapsed time: 0.105 seconds.
+
+tnom = 27
+temp = 27
+method = modified trap
+totiter = 2451
+traniter = 2444
+tranpoints = 1223
+accept = 1189
+rejected = 34
+matrix size = 10
+fillins = 0
+solver = Normal
+Avg thread counts: 6.1/11.1/11.1/6.1
+Matrix Compiler1:      26 opcodes  0.1/[0.1]/0.1
+Matrix Compiler2:      60 opcodes  0.1/[0.1]/0.1
+

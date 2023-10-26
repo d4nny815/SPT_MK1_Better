@@ -7,13 +7,13 @@
  *   Used for LEDS, relays, etc. Simple HIGH/LOW control signals 
  *
 **/
-class SimpleIO {
+class DigitalOutput {
     private:
         int _pin;
         bool _IO_state;
 
     public:
-        SimpleIO(int pin);
+        DigitalOutput(int pin);
         bool get_state();
         void turn_on();
         void turn_off();

@@ -1,8 +1,8 @@
 #ifndef Loadcell_h
 #define Loadcell_h
-
 #include <Arduino.h>
 #include "HX711.h"
+//TODO: fix this whole thing
 
 /**
  *  Loadcell Library built from HX711 Library

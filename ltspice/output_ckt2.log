@@ -1,0 +1,88 @@
+Circuit: * C:\Users\D4nny\Documents\school\SPT_MK1_Better\ltspice\output_ckt2.asc
+
+Warning: Multiple definitions of model "2scr375p" Type: BJT
+Warning: Multiple definitions of model "bc857b" Type: BJT
+Warning: Multiple definitions of model "bc847c" Type: BJT
+Warning: Multiple definitions of model "bc847b" Type: BJT
+Direct Newton iteration for .op point succeeded.
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 +to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 +to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 +++to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 +to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.00399997 to 0.00399997
+Heightened Def Con from 0.004 ++to 0.004
+Heightened Def Con from 0.004 to 0.004
+Heightened Def Con from 0.004 to 0.004
+Heightened Def Con from 0.006 to 0.006
+Heightened Def Con from 0.008 ++++++++++++++++++++to 0.008
+Heightened Def Con from 0.008 to 0.008
+Heightened Def Con from 0.008 ++to 0.008
+
+Date: Thu Oct 26 03:39:34 2023
+Total elapsed time: 0.222 seconds.
+
+tnom = 27
+temp = 27
+method = modified trap
+totiter = 21679
+traniter = 21632
+tranpoints = 4184
+accept = 2995
+rejected = 1281
+matrix size = 73
+fillins = 14
+solver = Normal
+Avg thread counts: 1.6/4.4/5.0/1.6
+Matrix Compiler1: 4.65 KB object code size  0.9/0.4/[0.3]
+Matrix Compiler2: 6.08 KB object code size  0.3/0.4/[0.3]
+

@@ -1,45 +1,42 @@
 #include <Arduino.h>
 #include <stdlib.h>
 #include <avr/io.h>
-#include "SimpleIO.h"
+#include "DigitalInput.h"
+#include "DigitalOutput.h"
 #include "Transducer.h"
-#include "LoadCell.h" // TODO: might need to be updated
+#include "LoadCell.h"
+#include "DataLogger.h"
+
 
 // INPUT PINS
-// TODO: change for proper pin numbers and names
-#define TRANSDUCER1_PIN 10
-#define TRANSDUCER2_PIN 11
-#define TRANSDUCER3_PIN 12
-#define LOADCELL_PIN 13
-#define ESTOP_PIN 14
-#define KEY_IN_PIN 15
-#define KEY_TURNED_PIN 16
-#define OXYGEN_VALUE_PIN 17
-#define FUEL_VALUE_PIN 18
-#define LAUNCH_PIN 19
-#define START_PIN 34
+// Analog IN
+#define TRANSDUCER1_PIN 14
+#define TRANSDUCER2_PIN 15
+#define TRANSDUCER3_PIN 16
+#define LOADCELL_PIN 17
+// Digital IN
+#define SW_LAUNCH_PIN 29 // both oxygen and fuel
+#define SW_FUEL_VALUE_PIN 30
+#define SW_OXYGEN_VALUE_PIN 31
+#define ESTOP_PIN 32
+#define KEY_IN_PIN 33
+#define KEY_TURNED_PIN 34
 
 // OUTPUT PINS
-// TODO: change for proper pin numbers and names
-#define VALVE1_PIN 20
-#define VALUE2_PIN 21
-#define DISPLAY_PIN 23
-#define STOPLIGHT_RED_PIN 24
-#define STOPLIGHT_YELLOW_PIN 25
-#define STOPLIGHT_GREEN_PIN 26
+#define STOPLIGHT_GREEN_PIN 5
+#define STOPLIGHT_YELLOW_PIN 6
+#define STOPLIGHT_RED_PIN 7
+#define VALUE2_PIN 8
+#define VALVE1_PIN 9
 
 
 // Instantiate every component in the system
-SimpleIO red_light(STOPLIGHT_RED_PIN);
-SimpleIO yellow_light(STOPLIGHT_YELLOW_PIN);
-SimpleIO green_light(STOPLIGHT_GREEN_PIN);
-SimpleIO valve1(VALVE1_PIN);
-SimpleIO valve2(VALUE2_PIN);
-// Transducer transducer1(TRANSDUCER1_PIN);
-// Transducer transducer2(TRANSDUCER2_PIN);
-// Transducer transducer3(TRANSDUCER3_PIN);
-// Loadcell loadcell(LOADCELL_PIN);
-
+struct SerialData serial_data = {0, 0, 0, 0, 0};
+DigitalOutput red_light(STOPLIGHT_RED_PIN);
+DigitalOutput yellow_light(STOPLIGHT_YELLOW_PIN);
+DigitalOutput green_light(STOPLIGHT_GREEN_PIN);
+DigitalOutput valve1(VALVE1_PIN);
+DigitalOutput valve2(VALUE2_PIN);
 
 
 // Define the states of the system
@@ -55,42 +52,18 @@ bool ESTOP = false;
 bool first_time_in_state = true;
 
 
-// TODO: make sure these are proper data types
-struct SerialDate {
-	u_int64_t time;
-	u_int32_t tranducer1_data;
-	u_int32_t tranducer2_data;
-	int32_t tranducer3_data;
-	int32_t loadcell_data;
-};
-struct SerialDate serial_data = {0, 0, 0, 0};
-/**
- * This function prints the serial data in the following format:
- * tranducer1_data, tranducer2_data, tranducer3_data, loadcell_data
-*/
-void print_serial_data() {
-	String data = String(serial_data.time) + "," + String(serial_data.tranducer1_data) + "," + 
-					String(serial_data.tranducer2_data) + "," + String(serial_data.tranducer3_data) + 
-					"," + String(serial_data.loadcell_data);
-	Serial.println(data);
-}
-
-
 u_int64_t START_TIME_US;
 void setup() {
 	Serial.begin(115200);
-	STATE = POWER_ON;  // <- uncomment this line to start in POWER_ON state
 	Serial.println("POWER_ON");
-	
-	// while (1) {
-	// 	if (digitalRead(START_PIN) == HIGH) break;
-	// }
-	Serial.println("Time(us),Ducer1(psi), Ducer2(psi), Ducer3(psi), Loadcell(lbs)");
-	Serial.println("START");
+	// Serial.println("Time(us),Ducer1(psi), Ducer2(psi), Ducer3(psi), Loadcell(lbs)");
+	// print_serial_data();
+	// STATE = POWER_ON;  // <- uncomment this line to start in POWER_ON state
 	START_TIME_US = micros();
-	print_serial_data();
 	STATE = TEST; // <- For testing purposes
 }
+
+
 
 
 /************************************************
@@ -130,21 +103,12 @@ void power_on_state () {
 		first_time_in_state = false;
 	}
 	// TODO: everything that runs continuously in the POWER_ON state
-	// TODO: data monitoring
-	// serial_data.tranducer1_data = transducer1.get_value_psi();
-	// serial_data.tranducer2_data = transducer2.get_value_psi();
-	// serial_data.tranducer3_data = transducer3.get_value_psi();
-	// serial_data.loadcell_data = loadcell.get_value_lbs();
-	serial_data.time = micros() - START_TIME_US;
-	serial_data.tranducer1_data = 10;
-	serial_data.tranducer2_data = 100;
-	serial_data.tranducer3_data = 1000;
-	serial_data.loadcell_data = 10000;
-	print_serial_data();
+	
 };
 
 
 void key_in_state () {};
+
 void key_turned_state () {};
 
 void fail_state () {};
