@@ -12,7 +12,7 @@ struct SerialData {
 	int32_t loadcell_data;
 };
 
-void print_serial_data();
-
+void print_header();
+void print_serial_data(struct SerialData* serial_data);
 
 #endif

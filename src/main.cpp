@@ -56,9 +56,8 @@ u_int64_t START_TIME_US;
 void setup() {
 	Serial.begin(115200);
 	Serial.println("POWER_ON");
-	// Serial.println("Time(us),Ducer1(psi), Ducer2(psi), Ducer3(psi), Loadcell(lbs)");
-	// print_serial_data();
 	// STATE = POWER_ON;  // <- uncomment this line to start in POWER_ON state
+	print_header();
 	START_TIME_US = micros();
 	STATE = TEST; // <- For testing purposes
 }
@@ -121,7 +120,7 @@ void test_state() {
 		serial_data.tranducer2_data = i - 500;
 		serial_data.tranducer3_data = 1000 * sin(i * (PI / 180));
 		serial_data.loadcell_data = 1000 * cos(i * (PI / 180));
-		print_serial_data();		
+		print_serial_data(&serial_data);		
 		delay(10);
 	}
 };
@@ -154,7 +153,6 @@ void loop() {
 		// TODO: remove this state
 		// for testing purposes only
 		case (TEST): 
-			Serial.println("IN TEST");
 			test_state();
 			STATE = FAIL;
 			break;
