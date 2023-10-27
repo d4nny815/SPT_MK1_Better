@@ -163,7 +163,11 @@ void test_state() {
 };
 
 void loop() {
-	if (digitalRead(ESTOP_PIN) == HIGH) { // TODO: make this an ISR
+
+	//Transducer ducer1; //Testing Transducer Lib
+	//ducer1.voltageToPSI(4);
+
+	if (digitalRead(ESTOP_PIN) == LOW) { // TODO: make this an ISR
 		STATE = FAIL;
 	}
 	switch (STATE) {
