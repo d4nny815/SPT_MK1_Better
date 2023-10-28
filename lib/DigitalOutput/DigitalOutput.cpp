@@ -11,10 +11,12 @@ DigitalOutput::DigitalOutput(int pin_number) {
     _pin = pin_number;
     _IO_state = 0;
     pinMode(_pin, OUTPUT);
-    digitalWrite(_pin, LOW);
+    digitalWriteFast(_pin, LOW);
 }
 
-
+/**
+ * @brief Returns the state of the I/O pin (HIGH or LOW).
+*/
 bool DigitalOutput::get_state() {return _IO_state; }
 
 /**

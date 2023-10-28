@@ -1,18 +1,24 @@
 #ifndef DataLogger_h
 #define DataLogger_h
 #include <Arduino.h>
+#include "Transducer.h"
+#include "Loadcell.h"
 
 
-// TODO: make sure these are proper data types
-struct SerialData {
+class SerialData {
+	private:
 	u_int64_t time;
-	u_int32_t tranducer1_data;
-	u_int32_t tranducer2_data;
-	int32_t tranducer3_data;
+	u_int64_t START_TIME_US;
+	u_int16_t transducer1_data;
+	u_int16_t transducer2_data;
+	u_int16_t transducer3_data;
 	int32_t loadcell_data;
+
+	public:
+		SerialData();
+		// void accummulate_data(Transducer transducers_arr[], Loadcell Loadcell); // TODO: implement this
+		void accummulate_data(Transducer transducers_arr[]);
+		void print_header();
+		void print_serial_data();
 };
-
-void print_serial_data();
-
-
 #endif
