@@ -31,7 +31,7 @@
 
 
 // Instantiate every component in the system
-struct SerialData serial_data = {0, 0, 0, 0, 0};
+SerialData serial_data;
 DigitalOutput red_light(STOPLIGHT_RED_PIN);
 DigitalOutput yellow_light(STOPLIGHT_YELLOW_PIN);
 DigitalOutput green_light(STOPLIGHT_GREEN_PIN);
@@ -43,7 +43,7 @@ DigitalInput sw_launch(SW_LAUNCH_PIN);
 Transducer ducer1(TRANSDUCER1_PIN);
 Transducer ducer2(TRANSDUCER2_PIN);
 Transducer ducer3(TRANSDUCER3_PIN);
-
+Transducer ducer_arr[] = {ducer1, ducer2, ducer3};
 
 // Define the states of the system
 enum State {
@@ -57,21 +57,12 @@ State STATE;
 bool ESTOP = false;
 bool first_time_in_state = true;
 
-void accumulate_data() {
 
-	// serial_data.loadcell_data = loadcell.read();
-
-	return;
-};
-
-
-u_int64_t START_TIME_US;
 void setup() {
 	Serial.begin(115200);
 	Serial.println("POWER_ON");
+	serial_data.print_header();
 	// STATE = POWER_ON;  // <- uncomment this line to start in POWER_ON state
-	print_header();
-	START_TIME_US = micros();
 	STATE = TEST; // <- For testing purposes
 }
 
@@ -117,9 +108,8 @@ void power_on_state () {
 		first_time_in_state = false;
 	}
 	// TODO: everything that runs continuously in the POWER_ON state
-	accumulate_data();
-	print_serial_data(&serial_data);
-
+	serial_data.accummulate_data(ducer_arr);
+	serial_data.print_serial_data();
 	return;
 };
 
@@ -129,19 +119,6 @@ void key_in_state () {};
 void key_turned_state () {};
 
 void fail_state () {};
-
-void test_state() {
-	// testing serial plotter
-	Serial.println("i,math_func");
-	for (u_int32_t i=0; i<0xffffffff; i++) {
-		serial_data.tranducer1_data = i;
-		serial_data.tranducer2_data = i - 500;
-		serial_data.tranducer3_data = 1000 * sin(i * (PI / 180));
-		serial_data.loadcell_data = 1000 * cos(i * (PI / 180));
-		print_serial_data(&serial_data);		
-		delay(10);
-	}
-};
 
 void loop() {
 	if (digitalRead(ESTOP_PIN) == HIGH) { // TODO: make this an ISR
@@ -171,7 +148,6 @@ void loop() {
 		// TODO: remove this state
 		// for testing purposes only
 		case (TEST): 
-			test_state();
 			STATE = FAIL;
 			break;
 
