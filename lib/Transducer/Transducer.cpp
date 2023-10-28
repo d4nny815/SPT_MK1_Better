@@ -2,6 +2,12 @@
 #include <Arduino.h>
 #include "Transducer.h"
 
+Transducer::Transducer(int pin) {
+    _pin = pin;
+    pinMode(_pin, INPUT);
+}
+
+
 //Converting the resistors voltage into a PSI value
 u_int32_t Transducer::get_PSI(){
     int ResistorVoltage = analogRead(_pin);
@@ -14,6 +20,5 @@ u_int32_t Transducer::get_PSI(){
 
     //ducerPSI = map(4, 20, 0, 1000)
 
-    Serial.println(_ducerPSI);
     return _ducerPSI;
 }

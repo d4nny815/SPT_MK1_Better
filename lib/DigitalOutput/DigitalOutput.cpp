@@ -11,7 +11,7 @@ DigitalOutput::DigitalOutput(int pin_number) {
     _pin = pin_number;
     _IO_state = 0;
     pinMode(_pin, OUTPUT);
-    digitalWrite(_pin, LOW);
+    digitalWriteFast(_pin, LOW);
 }
 
 
