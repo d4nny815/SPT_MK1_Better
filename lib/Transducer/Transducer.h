@@ -17,7 +17,7 @@ class Transducer {
         
     public:
         Transducer(int pin);
-        u_int32_t get_value_psi();
+        //u_int32_t get_value_psi();
         u_int32_t voltageToPSI(int ResistorVoltage);
         int ducerPSI;
         int ducer1;

@@ -17,7 +17,7 @@
 #define OXYGEN_VALUE_PIN 17
 #define FUEL_VALUE_PIN 18
 #define LAUNCH_PIN 19
-#define START_PIN 34
+#define IGNITION_PIN 34
 
 // OUTPUT PINS
 // TODO: change for proper pin numbers and names
@@ -35,12 +35,14 @@ SimpleIO yellow_light(STOPLIGHT_YELLOW_PIN);
 SimpleIO green_light(STOPLIGHT_GREEN_PIN);
 SimpleIO valve1(VALVE1_PIN);
 SimpleIO valve2(VALUE2_PIN);
-// Transducer transducer1(TRANSDUCER1_PIN);
-// Transducer transducer2(TRANSDUCER2_PIN);
-// Transducer transducer3(TRANSDUCER3_PIN);
+Transducer transducer1(TRANSDUCER1_PIN);
+Transducer transducer2(TRANSDUCER2_PIN);
+Transducer transducer3(TRANSDUCER3_PIN);
 // Loadcell loadcell(LOADCELL_PIN);
-
-
+SimpleIO Switch_Oxidizer(OXYGEN_VALUE_PIN);
+SimpleIO Switch_Fuel(FUEL_VALUE_PIN);
+SimpleIO Switch_Ignition(IGNITION_PIN);
+SimpleIO Switch_Launch(LAUNCH_PIN);
 
 // Define the states of the system
 enum State {
@@ -55,7 +57,7 @@ bool ESTOP = false;
 bool first_time_in_state = true;
 
 
-// TODO: make sure these are proper data types
+// TODO: make sure these are proper data typ es
 struct SerialDate {
 	u_int64_t time;
 	u_int32_t tranducer1_data;
@@ -124,9 +126,9 @@ void power_on_state () {
 	if (first_time_in_state) {
 		valve1.turn_off();
 		valve2.turn_off();
-		red_light.turn_on();
+		red_light.turn_off();
 		yellow_light.turn_off();
-		green_light.turn_off();
+		green_light.turn_on();
 		first_time_in_state = false;
 	}
 	// TODO: everything that runs continuously in the POWER_ON state
@@ -143,9 +145,29 @@ void power_on_state () {
 	print_serial_data();
 };
 
+//Turns on the Yellow Light and allows the valves to actuate
+void key_in_state () {
 
-void key_in_state () {};
-void key_turned_state () {};
+	red_light.turn_off();
+	yellow_light.turn_on();
+	green_light.turn_off();
+
+};
+
+//Turns on Red Light, allows Launch Switch, Allows Ignition
+void key_turned_state () {
+
+	red_light.turn_on();
+	yellow_light.turn_off();
+	green_light.turn_off();
+
+	//Checks if the switch is on and turns on the valves if true
+	if (){
+
+	} else {
+
+	}
+};
 
 void fail_state () {};
 
