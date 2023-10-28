@@ -6,8 +6,8 @@
 // TODO: make sure these are proper data types
 struct SerialData {
 	u_int64_t time;
-	u_int32_t tranducer1_data;
-	u_int32_t tranducer2_data;
+	int32_t tranducer1_data;
+	int32_t tranducer2_data;
 	int32_t tranducer3_data;
 	int32_t loadcell_data;
 };

@@ -45,6 +45,7 @@ DigitalInput sw_launch(SW_LAUNCH_PIN);
 // Transducer ducer3(TRANSDUCER3_PIN);
 
 
+
 // Define the states of the system
 enum State {
   POWER_ON,
@@ -78,6 +79,7 @@ void accumulate_data() {
 
 	return;
 }
+
 
 u_int64_t START_TIME_US;
 void setup() {
@@ -133,6 +135,7 @@ void power_on_state () {
 	// TODO: everything that runs continuously in the POWER_ON state
 	accumulate_data();
 	print_serial_data(&serial_data);
+
 
 	return;
 };
