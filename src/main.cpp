@@ -4,11 +4,23 @@
 #include "DigitalInput.h"
 #include "DigitalOutput.h"
 #include "Transducer.h"
-#include "LoadCell.h"
+// #include "LoadCell.h"
 #include "DataLogger.h"
 
 
 // INPUT PINS
+// Analog IN
+#define TRANSDUCER1_PIN 14
+#define TRANSDUCER2_PIN 15
+#define TRANSDUCER3_PIN 16
+#define LOADCELL_PIN 17
+// Digital IN
+#define SW_LAUNCH_PIN 29 // both oxygen and fuel
+#define SW_FUEL_VALUE_PIN 30
+#define SW_OXYGEN_VALUE_PIN 31
+#define ESTOP_PIN 32
+#define KEY_IN_PIN 33
+#define KEY_TURNED_PIN 34
 
 // OUTPUT PINS
 #define STOPLIGHT_GREEN_PIN 5
@@ -19,6 +31,18 @@
 
 
 // Instantiate every component in the system
+struct SerialData serial_data = {0, 0, 0, 0, 0};
+DigitalOutput red_light(STOPLIGHT_RED_PIN);
+DigitalOutput yellow_light(STOPLIGHT_YELLOW_PIN);
+DigitalOutput green_light(STOPLIGHT_GREEN_PIN);
+DigitalOutput valve1(VALVE1_PIN);
+DigitalOutput valve2(VALUE2_PIN);
+DigitalInput sw_fuel(SW_FUEL_VALUE_PIN);
+DigitalInput sw_oxygen(SW_OXYGEN_VALUE_PIN);
+DigitalInput sw_launch(SW_LAUNCH_PIN);
+// Transducer ducer1(TRANSDUCER1_PIN);
+// Transducer ducer2(TRANSDUCER2_PIN);
+// Transducer ducer3(TRANSDUCER3_PIN);
 
 
 // Define the states of the system
@@ -33,7 +57,27 @@ State STATE;
 bool ESTOP = false;
 bool first_time_in_state = true;
 
+// void accumulate_data() {
+// 	serial_data.time = micros() - START_TIME_US;
+// 	serial_data.tranducer1_data = ducer1.get_value_psi();
+// 	serial_data.tranducer2_data = ducer2.get_value_psi();
+// 	serial_data.tranducer3_data = ducer3.get_value_psi();
+// 	// serial_data.loadcell_data = loadcell.read();
 
+// 	return;
+// };
+
+int test_var;
+void accumulate_data() {
+	test_var++;
+	serial_data.time = rand();
+	serial_data.tranducer1_data = 100 * sin((PI / 180.0) * test_var);
+	serial_data.tranducer2_data = 100 * cos((PI / 180.0) * test_var);
+	serial_data.tranducer3_data = test_var;
+	// serial_data.loadcell_data = loadcell.read();
+
+	return;
+}
 
 u_int64_t START_TIME_US;
 void setup() {
@@ -75,35 +119,28 @@ void setup() {
  ************************************************
 */
 
+
+
 void power_on_state () {
 	if (first_time_in_state) {
 		valve1.turn_off();
 		valve2.turn_off();
-		red_light.turn_off();
+		red_light.turn_on();
 		yellow_light.turn_off();
-		green_light.turn_on();
+		green_light.turn_off();
 		first_time_in_state = false;
 	}
 	// TODO: everything that runs continuously in the POWER_ON state
-	
+	accumulate_data();
+	print_serial_data(&serial_data);
+
+	return;
 };
 
-//Turns on the Yellow Light and allows the valves to actuate
-void key_in_state () {
 
-	red_light.turn_off();
-	yellow_light.turn_on();
-	green_light.turn_off();
+void key_in_state () {};
 
-};
-
-//Turns on Red Light, allows Launch Switch, Allows Ignition
-void key_turned_state () {
-
-	red_light.turn_on();
-	yellow_light.turn_off();
-	green_light.turn_off();
-
+void key_turned_state () {};
 
 void fail_state () {};
 
@@ -121,11 +158,7 @@ void test_state() {
 };
 
 void loop() {
-
-	//Transducer ducer1; //Testing Transducer Lib
-	//ducer1.voltageToPSI(4);
-
-	if (digitalRead(ESTOP_PIN) == LOW) { // TODO: make this an ISR
+	if (digitalRead(ESTOP_PIN) == HIGH) { // TODO: make this an ISR
 		STATE = FAIL;
 	}
 	switch (STATE) {
