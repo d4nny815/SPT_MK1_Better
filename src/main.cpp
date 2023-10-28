@@ -74,8 +74,6 @@ void setup() {
 }
 
 
-
-
 /************************************************
  * HERE STARTS THE REAL CODE
  *  /\/\/\                            /  \
@@ -143,13 +141,16 @@ void key_in_state () {
 		valve2.turn_on();
 		valve1.turn_off();
 	}
+	else {
+		valve1.turn_off();
+		valve2.turn_off();
+	}
 
 	serial_data.accummulate_data(ducer_arr);
 	// serial_data.print_serial_data();
 	return;
 };
 
-// TODO: for nick
 void key_turned_state () {
 	if (first_time_in_state) {
 		valve1.turn_off();
@@ -181,8 +182,6 @@ void key_turned_state () {
 	return;
 };
 
-// TODO: for nick
-// anything else for this state
 void fail_state () {
 	green_light.turn_on();
 	yellow_light.turn_on();
@@ -204,7 +203,6 @@ void loop() {
 			if (key_in.read()) {
 				STATE = KEY_IN;
 				first_time_in_state = true;
-				Serial.println("going to KEY_IN from POWER_ON");
 			}
 			break;
 
@@ -213,18 +211,24 @@ void loop() {
 			if (key_turned.read()) {
 				STATE = KEY_TURNED;
 				first_time_in_state = true;
-				Serial.println("going to KEY_TURNED from KEY_IN");
 			}
-			if (!key_in.read()) {
-				Serial.println(key_in.read());
+			else if (!key_in.read()) {
 				STATE = POWER_ON;
 				first_time_in_state = true;
-				Serial.println("going to POWER_ON from KEY_IN");
 			}
 			break;
 
 		case (KEY_TURNED): 
 			key_turned_state();
+			if (!key_in.read()) {
+				STATE = POWER_ON;
+				first_time_in_state = true;
+			}
+
+			else if (!key_turned.read()) {
+				STATE = KEY_IN;
+				first_time_in_state = true;
+			}
 			break;
 
 		case (FAIL): 
@@ -232,6 +236,6 @@ void loop() {
 			break;
 
 		default:
-			STATE = FAIL;  // something went wrong
+			STATE = POWER_ON;
 	}
 }
