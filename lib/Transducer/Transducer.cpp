@@ -2,18 +2,22 @@
 #include <Arduino.h>
 #include "Transducer.h"
 
-//Converting the resistors voltage into a PSI value
-u_int32_t Transducer::get_PSI(){
-    int ResistorVoltage = analogRead(_pin);
-    
-    int _ducerAmp;
-    int ScaleFactorPSI = _ducerPSIRange/_ducerAmpRange; //a conversion factor with psi per amp 
 
-    _ducerAmp = ResistorVoltage/_resistorValue;
-    _ducerPSI = ScaleFactorPSI*(_ducerAmp - _ducerOffset);
+/**
+ * @brief Constructor for the Transducer class
+*/
+Transducer::Transducer(int pin) {
+    _pin = pin;
+    pinMode(_pin, INPUT);
+    _minVolt = ((.004 * 100) / 3.3) * 1024;
+    _maxVolt = ((.02 * 100) / 3.3) * 1024; 
+}
 
-    //ducerPSI = map(4, 20, 0, 1000)
-
-    Serial.println(_ducerPSI);
-    return _ducerPSI;
+/**
+ * @brief Returns the PSI of the transducer
+ * @return PSI of the transducer from 0 to 1000
+*/
+u_int16_t Transducer::get_PSI(){
+    int raw = analogRead(_pin);
+    return map(raw, _minVolt, _maxVolt, 0, 1000);
 }
