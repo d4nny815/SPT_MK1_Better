@@ -1,5 +1,16 @@
 #include "DataLogger.h"
 #include <Arduino.h>
+#include "Transducer.h"
+#include "Loadcell.h"
+
+// void accummulate_data(struct SerialData* serial_data, Transducer transducers_arr[], Loadcell loadcell) {
+	// serial_data->time = micros() - START_TIME_US;
+	// serial_data->tranducer1_data = transducers_arr[0].voltageToPSI(1);
+	// serial_data->tranducer2_data = transducers_arr[1].voltageToPSI(1);
+	// serial_data->tranducer3_data = transducers_arr[2].voltageToPSI(1);
+	// serial_data.loadcell_data = loadcell.read();
+// }
+
 
 
 /**

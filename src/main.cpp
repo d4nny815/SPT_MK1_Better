@@ -58,10 +58,7 @@ bool ESTOP = false;
 bool first_time_in_state = true;
 
 void accumulate_data() {
-	serial_data.time = micros() - START_TIME_US;
-	serial_data.tranducer1_data = ducer1.get_PSI();
-	serial_data.tranducer2_data = ducer2.get_PSI();
-	serial_data.tranducer3_data = ducer3.get_PSI();
+
 	// serial_data.loadcell_data = loadcell.read();
 
 	return;
