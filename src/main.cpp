@@ -40,9 +40,9 @@ DigitalOutput valve2(VALUE2_PIN);
 DigitalInput sw_fuel(SW_FUEL_VALUE_PIN);
 DigitalInput sw_oxygen(SW_OXYGEN_VALUE_PIN);
 DigitalInput sw_launch(SW_LAUNCH_PIN);
-// Transducer ducer1(TRANSDUCER1_PIN);
-// Transducer ducer2(TRANSDUCER2_PIN);
-// Transducer ducer3(TRANSDUCER3_PIN);
+Transducer ducer1(TRANSDUCER1_PIN);
+Transducer ducer2(TRANSDUCER2_PIN);
+Transducer ducer3(TRANSDUCER3_PIN);
 
 
 // Define the states of the system
@@ -58,14 +58,12 @@ bool ESTOP = false;
 bool first_time_in_state = true;
 
 void accumulate_data() {
-	// serial_data.time = micros() - START_TIME_US;
-	// serial_data.tranducer1_data = ducer1.get_value_psi();
-	// serial_data.tranducer2_data = ducer2.get_value_psi();
-	// serial_data.tranducer3_data = ducer3.get_value_psi();
+
 	// serial_data.loadcell_data = loadcell.read();
 
 	return;
 };
+
 
 u_int64_t START_TIME_US;
 void setup() {
