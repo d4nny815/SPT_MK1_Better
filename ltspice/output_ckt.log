@@ -1,0 +1,52 @@
+Circuit: * C:\Users\D4nny\Documents\school\SPT_MK1_Better\ltspice\output_ckt.asc
+
+Warning: Multiple definitions of model "2scr375p" Type: BJT
+Warning: Multiple definitions of model "bc857b" Type: BJT
+Warning: Multiple definitions of model "bc847c" Type: BJT
+Warning: Multiple definitions of model "bc847b" Type: BJT
+WARNING: Node NC_02 is floating.
+WARNING: Node NC_03 is floating.
+WARNING: Node NC_04 is floating.
+
+WARNING: Less than two connections to node nc_01.  This node is used by m5.
+WARNING: Less than two connections to node nc_03.  This node is used by m5.
+Direct Newton iteration for .op point succeeded.
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 +to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 +to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.004 to 0.004
+Heightened Def Con from 0.004 to 0.004
+Heightened Def Con from 0.006 to 0.006
+Heightened Def Con from 0.008 to 0.008
+Heightened Def Con from 0.008 to 0.008
+
+Date: Thu Oct 26 23:30:22 2023
+Total elapsed time: 0.177 seconds.
+
+tnom = 27
+temp = 27
+method = modified trap
+totiter = 10608
+traniter = 10565
+tranpoints = 2718
+accept = 2216
+rejected = 524
+matrix size = 90
+fillins = 20
+solver = Normal
+Avg thread counts: 2.2/5.8/6.2/2.2
+Matrix Compiler1:     362 opcodes  1.0/[0.5]/0.7
+Matrix Compiler2: 7.70 KB object code size  0.4/0.6/[0.3]
+
