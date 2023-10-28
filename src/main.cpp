@@ -9,18 +9,6 @@
 
 
 // INPUT PINS
-// Analog IN
-#define TRANSDUCER1_PIN 14
-#define TRANSDUCER2_PIN 15
-#define TRANSDUCER3_PIN 16
-#define LOADCELL_PIN 17
-// Digital IN
-#define SW_LAUNCH_PIN 29 // both oxygen and fuel
-#define SW_FUEL_VALUE_PIN 30
-#define SW_OXYGEN_VALUE_PIN 31
-#define ESTOP_PIN 32
-#define KEY_IN_PIN 33
-#define KEY_TURNED_PIN 34
 
 // OUTPUT PINS
 #define STOPLIGHT_GREEN_PIN 5
@@ -31,12 +19,6 @@
 
 
 // Instantiate every component in the system
-struct SerialData serial_data = {0, 0, 0, 0, 0};
-DigitalOutput red_light(STOPLIGHT_RED_PIN);
-DigitalOutput yellow_light(STOPLIGHT_YELLOW_PIN);
-DigitalOutput green_light(STOPLIGHT_GREEN_PIN);
-DigitalOutput valve1(VALVE1_PIN);
-DigitalOutput valve2(VALUE2_PIN);
 
 
 // Define the states of the system
@@ -50,6 +32,7 @@ enum State {
 State STATE;
 bool ESTOP = false;
 bool first_time_in_state = true;
+
 
 
 u_int64_t START_TIME_US;
@@ -96,19 +79,31 @@ void power_on_state () {
 	if (first_time_in_state) {
 		valve1.turn_off();
 		valve2.turn_off();
-		red_light.turn_on();
+		red_light.turn_off();
 		yellow_light.turn_off();
-		green_light.turn_off();
+		green_light.turn_on();
 		first_time_in_state = false;
 	}
 	// TODO: everything that runs continuously in the POWER_ON state
 	
 };
 
+//Turns on the Yellow Light and allows the valves to actuate
+void key_in_state () {
 
-void key_in_state () {};
+	red_light.turn_off();
+	yellow_light.turn_on();
+	green_light.turn_off();
 
-void key_turned_state () {};
+};
+
+//Turns on Red Light, allows Launch Switch, Allows Ignition
+void key_turned_state () {
+
+	red_light.turn_on();
+	yellow_light.turn_off();
+	green_light.turn_off();
+
 
 void fail_state () {};
 
@@ -126,7 +121,11 @@ void test_state() {
 };
 
 void loop() {
-	if (digitalRead(ESTOP_PIN) == HIGH) { // TODO: make this an ISR
+
+	//Transducer ducer1; //Testing Transducer Lib
+	//ducer1.voltageToPSI(4);
+
+	if (digitalRead(ESTOP_PIN) == LOW) { // TODO: make this an ISR
 		STATE = FAIL;
 	}
 	switch (STATE) {
