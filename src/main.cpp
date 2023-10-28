@@ -57,27 +57,15 @@ State STATE;
 bool ESTOP = false;
 bool first_time_in_state = true;
 
-// void accumulate_data() {
-// 	serial_data.time = micros() - START_TIME_US;
-// 	serial_data.tranducer1_data = ducer1.get_value_psi();
-// 	serial_data.tranducer2_data = ducer2.get_value_psi();
-// 	serial_data.tranducer3_data = ducer3.get_value_psi();
-// 	// serial_data.loadcell_data = loadcell.read();
-
-// 	return;
-// };
-
-int test_var;
 void accumulate_data() {
-	test_var++;
-	serial_data.time = rand();
-	serial_data.tranducer1_data = 100 * sin((PI / 180.0) * test_var);
-	serial_data.tranducer2_data = 100 * cos((PI / 180.0) * test_var);
-	serial_data.tranducer3_data = test_var;
+	// serial_data.time = micros() - START_TIME_US;
+	// serial_data.tranducer1_data = ducer1.get_value_psi();
+	// serial_data.tranducer2_data = ducer2.get_value_psi();
+	// serial_data.tranducer3_data = ducer3.get_value_psi();
 	// serial_data.loadcell_data = loadcell.read();
 
 	return;
-}
+};
 
 u_int64_t START_TIME_US;
 void setup() {
