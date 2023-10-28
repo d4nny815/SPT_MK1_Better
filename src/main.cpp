@@ -37,8 +37,8 @@ SerialData serial_data;
 DigitalOutput red_light(STOPLIGHT_RED_PIN);
 DigitalOutput yellow_light(STOPLIGHT_YELLOW_PIN);
 DigitalOutput green_light(STOPLIGHT_GREEN_PIN);
-DigitalOutput valve1(VALVE1_PIN);
-DigitalOutput valve2(VALUE2_PIN);
+DigitalOutput oxygen_valve(VALVE1_PIN);
+DigitalOutput fuel_valve(VALUE2_PIN);
 DigitalOutput ign_wire(IGN_PIN);
 DigitalInput key_in(KEY_IN_PIN);
 DigitalInput key_turned(KEY_TURNED_PIN);
@@ -56,19 +56,15 @@ enum State {
   POWER_ON,
   KEY_IN,
   KEY_TURNED,
-  FAIL,
-  TEST
+  FAIL
 };
 State STATE;
-bool ESTOP = false;
 bool first_time_in_state = true;
 
 
 void setup() {
 	Serial.begin(115200);
 	Serial.println("POWER_ON");
-
-
 	serial_data.print_header();
 	STATE = POWER_ON;  // <- uncomment this line to start in POWER_ON state
 }
@@ -105,8 +101,8 @@ void setup() {
 
 void power_on_state () {
 	if (first_time_in_state) {
-		valve1.turn_off();
-		valve2.turn_off();
+		oxygen_valve.turn_off();
+		fuel_valve.turn_off();
 		green_light.turn_on();
 		yellow_light.turn_off();
 		red_light.turn_off();
@@ -121,29 +117,27 @@ void power_on_state () {
 
 void key_in_state () {
 	if (first_time_in_state) {
-		valve1.turn_off();
-		valve2.turn_off();
+		oxygen_valve.turn_off();
+		fuel_valve.turn_off();
 		green_light.turn_off();
 		yellow_light.turn_on();
 		red_light.turn_off();
 		first_time_in_state = false;
 	}
 
-	if (sw_fuel.read() & sw_oxygen.read()) {
-		valve1.turn_off();
-		valve2.turn_off();
-	}
-	else if (sw_fuel.read() & !sw_oxygen.read()) {
-		valve1.turn_on();
-		valve2.turn_off();
-	}
-	else if (sw_oxygen.read() & !sw_fuel.read()) {
-		valve2.turn_on();
-		valve1.turn_off();
-	}
-	else {
-		valve1.turn_off();
-		valve2.turn_off();
+	switch ((sw_fuel.read() + sw_oxygen.read()) & 0b11) {
+		case 0b11:
+			oxygen_valve.turn_off();
+			fuel_valve.turn_off();
+		case 0b10:
+			fuel_valve.turn_on();
+			oxygen_valve.turn_off();
+		case 0b01:
+			oxygen_valve.turn_on();
+			fuel_valve.turn_off();
+		case 0b00:
+			oxygen_valve.turn_off();
+			fuel_valve.turn_off();
 	}
 
 	serial_data.accummulate_data(ducer_arr);
@@ -153,8 +147,8 @@ void key_in_state () {
 
 void key_turned_state () {
 	if (first_time_in_state) {
-		valve1.turn_off();
-		valve2.turn_off();
+		oxygen_valve.turn_off();
+		fuel_valve.turn_off();
 		green_light.turn_off();
 		yellow_light.turn_off();
 		red_light.turn_on();
@@ -163,12 +157,12 @@ void key_turned_state () {
 	
 	//activates both valves at the same time 
 	if(sw_launch.read()) {
-		valve1.turn_on();
-		valve2.turn_on();
+		oxygen_valve.turn_on();
+		fuel_valve.turn_on();
 	}
 	else {
-		valve1.turn_off();
-		valve2.turn_off();
+		oxygen_valve.turn_off();
+		fuel_valve.turn_off();
 	}
 
 	if(sw_ignition.read()){
@@ -188,9 +182,12 @@ void fail_state () {
 	red_light.turn_on();
 
 	ign_wire.turn_off();
-	valve1.turn_off();
-	valve2.turn_off();
+	oxygen_valve.turn_off();
+	fuel_valve.turn_off();
+
 	serial_data.accummulate_data(ducer_arr);
+	// serial_data.print_serial_data();
+	return;
 };
 
 void loop() {
@@ -200,6 +197,7 @@ void loop() {
 	switch (STATE) {
 		case (POWER_ON): 
 			power_on_state();
+			
 			if (key_in.read()) {
 				STATE = KEY_IN;
 				first_time_in_state = true;
@@ -208,6 +206,7 @@ void loop() {
 
 		case (KEY_IN): 
 			key_in_state();
+
 			if (key_turned.read()) {
 				STATE = KEY_TURNED;
 				first_time_in_state = true;
@@ -220,6 +219,7 @@ void loop() {
 
 		case (KEY_TURNED): 
 			key_turned_state();
+
 			if (!key_in.read()) {
 				STATE = POWER_ON;
 				first_time_in_state = true;

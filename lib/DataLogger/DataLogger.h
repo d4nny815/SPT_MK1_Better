@@ -9,9 +9,9 @@ class SerialData {
 	private:
 	u_int64_t time;
 	u_int64_t START_TIME_US;
-	u_int32_t transducer1_data;
-	u_int32_t transducer2_data;
-	int32_t transducer3_data;
+	u_int16_t transducer1_data;
+	u_int16_t transducer2_data;
+	u_int16_t transducer3_data;
 	int32_t loadcell_data;
 
 	public:

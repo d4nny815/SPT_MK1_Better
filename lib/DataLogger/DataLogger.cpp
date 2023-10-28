@@ -3,6 +3,10 @@
 #include "Transducer.h"
 #include "Loadcell.h"
 
+
+/**
+ * @brief Constructor for the SerialData class
+*/
 SerialData::SerialData() {
 	START_TIME_US = micros();
 	time = 0;
@@ -13,6 +17,10 @@ SerialData::SerialData() {
 }
 
 //TODO: add loadcell data
+/**
+ * @brief Accumulates the data from the transducers
+ * @param transducers_arr array of transducers
+*/
 void SerialData::accummulate_data(Transducer transducers_arr[]) {
 	time = micros();
 	transducer1_data = transducers_arr[0].get_PSI();
@@ -31,6 +39,9 @@ void SerialData::print_header() {
 	return;
 }
 
+/**
+ * @brief Prints the data to the serial monitor
+*/
 void SerialData::print_serial_data() {
     String data = String(time) + "," + String(transducer1_data) + "," + 
 					String(transducer2_data) + "," + String(transducer3_data) + 
