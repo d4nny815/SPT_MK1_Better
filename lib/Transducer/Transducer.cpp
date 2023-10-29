@@ -9,8 +9,8 @@
 Transducer::Transducer(int pin) {
     _pin = pin;
     pinMode(_pin, INPUT);
-    _minVolt = ((.004 * 100) / 3.3) * 1024;
-    _maxVolt = ((.02 * 100) / 3.3) * 1024; 
+    _minVolt = (_minCurrent * 100 / 3.3) * 1024;
+    _maxVolt = (_maxCurrent * 100 / 3.3) * 1024; 
 }
 
 /**
@@ -19,5 +19,11 @@ Transducer::Transducer(int pin) {
 */
 u_int16_t Transducer::get_PSI(){
     int raw = analogRead(_pin);
+    if (raw < _minVolt) {
+        _minVolt = raw;
+    }
+    if (raw > _maxVolt) {
+        _maxVolt = raw;
+    }
     return map(raw, _minVolt, _maxVolt, 0, 1000);
 }

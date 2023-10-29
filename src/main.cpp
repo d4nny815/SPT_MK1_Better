@@ -3,6 +3,7 @@
 #include <avr/io.h>
 #include "DigitalInput.h"
 #include "DigitalOutput.h"
+#include "SolenoidValve.h"
 #include "Transducer.h"
 // #include "LoadCell.h"
 #include "DataLogger.h"
@@ -24,12 +25,24 @@
 #define SW_IGNITION 35
 
 // OUTPUT PINS
-#define STOPLIGHT_GREEN_PIN 5
-#define STOPLIGHT_YELLOW_PIN 6
-#define STOPLIGHT_RED_PIN 7
-#define VALUE2_PIN 8
-#define VALVE1_PIN 9
-#define IGN_PIN 10
+#define STOPLIGHT_GREEN_PIN 4
+#define STOPLIGHT_YELLOW_PIN 5
+#define STOPLIGHT_RED_PIN 6
+#define FUEL_VALUE_PIN 7
+#define OXYGEN_VALVE_PIN 8
+#define IGN_PIN 9
+// PINS 10-13 are reserved for SPI communication
+
+// Define the states of the system
+enum State {
+  POWER_ON,
+  KSI,
+  LAUNCH,
+  FAIL, 
+  TEST
+};
+State STATE;
+bool first_time_in_state = true;
 
 
 // Instantiate every component in the system
@@ -37,11 +50,11 @@ SerialData serial_data;
 DigitalOutput red_light(STOPLIGHT_RED_PIN);
 DigitalOutput yellow_light(STOPLIGHT_YELLOW_PIN);
 DigitalOutput green_light(STOPLIGHT_GREEN_PIN);
-DigitalOutput oxygen_valve(VALVE1_PIN);
-DigitalOutput fuel_valve(VALUE2_PIN);
 DigitalOutput ign_wire(IGN_PIN);
-DigitalInput key_in(KEY_IN_PIN);
-DigitalInput key_turned(KEY_TURNED_PIN);
+SoleinoidValve oxygen_valve(OXYGEN_VALVE_PIN, 100, 60);
+SoleinoidValve fuel_valve(FUEL_VALUE_PIN, 100, 60);
+DigitalInput ksi(KEY_IN_PIN);
+DigitalInput launch_btn(KEY_TURNED_PIN);
 DigitalInput sw_fuel(SW_FUEL_VALUE_PIN);
 DigitalInput sw_oxygen(SW_OXYGEN_VALUE_PIN);
 DigitalInput sw_launch(SW_LAUNCH_PIN);
@@ -51,24 +64,14 @@ Transducer ducer2(TRANSDUCER2_PIN);
 Transducer ducer3(TRANSDUCER3_PIN);
 Transducer ducer_arr[] = {ducer1, ducer2, ducer3};
 
-// Define the states of the system
-enum State {
-  POWER_ON,
-  KEY_IN,
-  KEY_TURNED,
-  FAIL
-};
-State STATE;
-bool first_time_in_state = true;
-
-
 void setup() {
 	Serial.begin(115200);
 	Serial.println("POWER_ON");
 	serial_data.print_header();
-	STATE = POWER_ON;  // <- uncomment this line to start in POWER_ON state
+	serial_data.set_start_time();
+	STATE = POWER_ON; 
+	STATE = TEST;
 }
-
 
 /************************************************
  * HERE STARTS THE REAL CODE
@@ -97,8 +100,6 @@ void setup() {
  ************************************************
 */
 
-
-
 void power_on_state () {
 	if (first_time_in_state) {
 		oxygen_valve.turn_off();
@@ -110,12 +111,12 @@ void power_on_state () {
 	}
 
 	serial_data.accummulate_data(ducer_arr);
-	// serial_data.print_serial_data();
+	serial_data.print_serial_data(); // TODO: uncomment this line to print data
 	return;
 };
 
 
-void key_in_state () {
+void ksi_state () {
 	if (first_time_in_state) {
 		oxygen_valve.turn_off();
 		fuel_valve.turn_off();
@@ -125,27 +126,29 @@ void key_in_state () {
 		first_time_in_state = false;
 	}
 
-	switch ((sw_fuel.read() + sw_oxygen.read()) & 0b11) {
-		case 0b11:
-			oxygen_valve.turn_off();
-			fuel_valve.turn_off();
-		case 0b10:
-			fuel_valve.turn_on();
-			oxygen_valve.turn_off();
-		case 0b01:
-			oxygen_valve.turn_on();
-			fuel_valve.turn_off();
-		case 0b00:
-			oxygen_valve.turn_off();
-			fuel_valve.turn_off();
+	if (sw_fuel.read() && sw_oxygen.read()) {
+		oxygen_valve.turn_off();
+		fuel_valve.turn_off();
+	}
+	else if (sw_fuel.read() && !sw_oxygen.read()) {
+		fuel_valve.turn_on(millis());
+		oxygen_valve.turn_off();
+	}
+	else if (sw_oxygen.read() && !sw_fuel.read()) {
+		oxygen_valve.turn_on(millis());
+		fuel_valve.turn_off();
+	} 
+	else {
+		oxygen_valve.turn_off();
+		fuel_valve.turn_off();
 	}
 
 	serial_data.accummulate_data(ducer_arr);
-	// serial_data.print_serial_data();
+	// serial_data.print_serial_data();  // TODO: uncomment this line to print data
 	return;
 };
 
-void key_turned_state () {
+void launch_state () {
 	if (first_time_in_state) {
 		oxygen_valve.turn_off();
 		fuel_valve.turn_off();
@@ -155,22 +158,19 @@ void key_turned_state () {
 		first_time_in_state = false;
 	}
 	
-	//activates both valves at the same time 
-	if(sw_launch.read()) {
-		oxygen_valve.turn_on();
-		fuel_valve.turn_on();
+	if (sw_launch.read()) {
+		oxygen_valve.turn_on(millis());
+		fuel_valve.turn_on(millis());
 	}
 	else {
 		oxygen_valve.turn_off();
 		fuel_valve.turn_off();
 	}
 
-	if(sw_ignition.read()){
-		ign_wire.turn_on();
-	}	
-	else {
-		ign_wire.turn_off();
-	}
+	if (sw_ignition.read()) ign_wire.turn_on();	
+	else ign_wire.turn_off();
+
+
 	serial_data.accummulate_data(ducer_arr);
 	// serial_data.print_serial_data();
 	return;
@@ -190,51 +190,53 @@ void fail_state () {
 	return;
 };
 
+void test_state() {
+
+	return;
+}
+
+
 void loop() {
 	// if (digitalRead(ESTOP_PIN) == HIGH) { // TODO: make this an ISR
 	// 	STATE = FAIL;
 	// }
+
 	switch (STATE) {
 		case (POWER_ON): 
 			power_on_state();
 			
-			if (key_in.read()) {
-				STATE = KEY_IN;
+			if (ksi.read()) {
+				STATE = KSI;
 				first_time_in_state = true;
 			}
 			break;
+		case (KSI): 
+			ksi_state();
 
-		case (KEY_IN): 
-			key_in_state();
-
-			if (key_turned.read()) {
-				STATE = KEY_TURNED;
+			if (launch_btn.read()) {
+				STATE = LAUNCH;
 				first_time_in_state = true;
 			}
-			else if (!key_in.read()) {
+			if (!ksi.read()) {
 				STATE = POWER_ON;
 				first_time_in_state = true;
 			}
 			break;
+		case (LAUNCH): 
+			launch_state();
 
-		case (KEY_TURNED): 
-			key_turned_state();
-
-			if (!key_in.read()) {
+			if (!ksi.read()) {
 				STATE = POWER_ON;
 				first_time_in_state = true;
 			}
-
-			else if (!key_turned.read()) {
-				STATE = KEY_IN;
-				first_time_in_state = true;
-			}
 			break;
-
 		case (FAIL): 
 			fail_state();
 			break;
 
+		case (TEST):
+			test_state();
+			break;
 		default:
 			STATE = POWER_ON;
 	}

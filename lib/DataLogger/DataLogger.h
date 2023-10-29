@@ -14,9 +14,11 @@ class SerialData {
 	u_int16_t transducer3_data;
 	int32_t loadcell_data;
 
+
 	public:
 		SerialData();
 		// void accummulate_data(Transducer transducers_arr[], Loadcell Loadcell); // TODO: implement this
+		void set_start_time();
 		void accummulate_data(Transducer transducers_arr[]);
 		void print_header();
 		void print_serial_data();
