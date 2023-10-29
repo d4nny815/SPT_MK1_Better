@@ -28,10 +28,6 @@ void DigitalOutput::turn_on() {
     return;
 }
 
-void DigitalOutput::turn_on(int duty_cycle) {
-    _IO_state = 1;
-    analogWrite(_pin, 256 * duty_cycle);
-}
 
 /**
  * @brief Turn off (set to LOW) the output pin.
