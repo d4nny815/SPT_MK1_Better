@@ -27,8 +27,8 @@
 #define STOPLIGHT_GREEN_PIN 5
 #define STOPLIGHT_YELLOW_PIN 6
 #define STOPLIGHT_RED_PIN 7
-#define VALUE2_PIN 8
-#define VALVE1_PIN 9
+#define FUEL_VALUE_PIN 8
+#define OXYGEN_VALVE_PIN 9
 #define IGN_PIN 10
 
 
@@ -37,8 +37,8 @@ SerialData serial_data;
 DigitalOutput red_light(STOPLIGHT_RED_PIN);
 DigitalOutput yellow_light(STOPLIGHT_YELLOW_PIN);
 DigitalOutput green_light(STOPLIGHT_GREEN_PIN);
-DigitalOutput oxygen_valve(VALVE1_PIN);
-DigitalOutput fuel_valve(VALUE2_PIN);
+DigitalOutput oxygen_valve(OXYGEN_VALVE_PIN);
+DigitalOutput fuel_valve(FUEL_VALUE_PIN);
 DigitalOutput ign_wire(IGN_PIN);
 DigitalInput key_in(KEY_IN_PIN);
 DigitalInput key_turned(KEY_TURNED_PIN);
@@ -125,20 +125,24 @@ void key_in_state () {
 		first_time_in_state = false;
 	}
 
-	switch ((sw_fuel.read() + sw_oxygen.read()) & 0b11) {
-		case 0b11:
-			oxygen_valve.turn_off();
-			fuel_valve.turn_off();
-		case 0b10:
-			fuel_valve.turn_on();
-			oxygen_valve.turn_off();
-		case 0b01:
-			oxygen_valve.turn_on();
-			fuel_valve.turn_off();
-		case 0b00:
-			oxygen_valve.turn_off();
-			fuel_valve.turn_off();
+	if (sw_fuel.read() & sw_oxygen.read()) {
+		oxygen_valve.turn_off();
+		fuel_valve.turn_off();
 	}
+	else if (sw_fuel.read() && !sw_oxygen.read()) {
+		fuel_valve.turn_on();
+		oxygen_valve.turn_off();
+	}
+	else if (sw_oxygen.read() && !sw_fuel.read()) {
+		oxygen_valve.turn_on(50);
+		fuel_valve.turn_off();
+	} 
+	else {
+		oxygen_valve.turn_off();
+		fuel_valve.turn_off();
+
+	}
+
 
 	serial_data.accummulate_data(ducer_arr);
 	// serial_data.print_serial_data();
@@ -222,11 +226,6 @@ void loop() {
 
 			if (!key_in.read()) {
 				STATE = POWER_ON;
-				first_time_in_state = true;
-			}
-
-			else if (!key_turned.read()) {
-				STATE = KEY_IN;
 				first_time_in_state = true;
 			}
 			break;

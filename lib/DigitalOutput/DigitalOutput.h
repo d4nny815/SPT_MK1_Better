@@ -16,6 +16,7 @@ class DigitalOutput {
         DigitalOutput(int pin);
         bool get_state();
         void turn_on();
+        void turn_on(int duty_cycle);
         void turn_off();
         void toggle();
 
