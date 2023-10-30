@@ -23,6 +23,7 @@ bool DigitalOutput::get_state() {return _IO_state; }
  * @brief Turn on (set to HIGH) the output pin.
  */
 void DigitalOutput::turn_on() {
+    if (_IO_state) return;
     _IO_state = 1;
     digitalWrite(_pin, HIGH);
     return;
@@ -33,6 +34,7 @@ void DigitalOutput::turn_on() {
  * @brief Turn off (set to LOW) the output pin.
  */
 void DigitalOutput::turn_off() {
+    if (!_IO_state) return;
     _IO_state = 0;
     digitalWrite(_pin, _IO_state);
     return;

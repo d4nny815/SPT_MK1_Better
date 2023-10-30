@@ -20,8 +20,8 @@
 #define SW_FUEL_VALUE_PIN 30
 #define SW_OXYGEN_VALUE_PIN 31
 #define ESTOP_PIN 32
-#define KEY_IN_PIN 33
-#define KEY_TURNED_PIN 34
+#define KSI_PIN 33
+#define LAUNCH_BTN_PIN 34
 #define SW_IGNITION 35
 
 // OUTPUT PINS
@@ -53,8 +53,8 @@ DigitalOutput green_light(STOPLIGHT_GREEN_PIN);
 DigitalOutput ign_wire(IGN_PIN);
 SoleinoidValve oxygen_valve(OXYGEN_VALVE_PIN, 100, 60);
 SoleinoidValve fuel_valve(FUEL_VALUE_PIN, 100, 60);
-DigitalInput ksi(KEY_IN_PIN);
-DigitalInput launch_btn(KEY_TURNED_PIN);
+DigitalInput ksi(KSI_PIN);
+DigitalInput launch_btn(LAUNCH_BTN_PIN);
 DigitalInput sw_fuel(SW_FUEL_VALUE_PIN);
 DigitalInput sw_oxygen(SW_OXYGEN_VALUE_PIN);
 DigitalInput sw_launch(SW_LAUNCH_PIN);
@@ -70,7 +70,7 @@ void setup() {
 	serial_data.print_header();
 	serial_data.set_start_time();
 	STATE = POWER_ON; 
-	STATE = TEST;
+	// STATE = TEST;
 }
 
 /************************************************
@@ -111,7 +111,7 @@ void power_on_state () {
 	}
 
 	serial_data.accummulate_data(ducer_arr);
-	serial_data.print_serial_data(); // TODO: uncomment this line to print data
+	// serial_data.print_serial_data(); // TODO: uncomment this line to print data
 	return;
 };
 
@@ -191,7 +191,6 @@ void fail_state () {
 };
 
 void test_state() {
-
 	return;
 }
 
@@ -200,6 +199,10 @@ void loop() {
 	// if (digitalRead(ESTOP_PIN) == HIGH) { // TODO: make this an ISR
 	// 	STATE = FAIL;
 	// }
+
+	// TODO: add serial communication
+	if (Serial.available()) {
+	}
 
 	switch (STATE) {
 		case (POWER_ON): 

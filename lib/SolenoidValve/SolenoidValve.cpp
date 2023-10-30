@@ -48,6 +48,7 @@ void SoleinoidValve::turn_on(unsigned long cur_time) {
  * @brief Turn off (set to LOW) the output pin.
  */
 void SoleinoidValve::turn_off() {
+    if (!_IO_state) return;
     _IO_state = 0;
     _is_on = false;
     analogWrite(_pin, 0);
