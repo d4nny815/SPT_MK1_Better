@@ -17,5 +17,7 @@ DigitalInput::DigitalInput(int pin) {
  * @brief Reads the value of the digital input pin
 */
 bool DigitalInput::read() {
-    return digitalRead(_pin);
+    bool initial_read = digitalRead(_pin);
+    delayMicroseconds(100); // terrible way to debounce
+    return digitalRead(_pin) && (digitalRead(_pin) == initial_read);
 }

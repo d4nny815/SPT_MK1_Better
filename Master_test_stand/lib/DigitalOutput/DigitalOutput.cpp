@@ -11,7 +11,7 @@ DigitalOutput::DigitalOutput(int pin_number) {
     _pin = pin_number;
     _IO_state = 0;
     pinMode(_pin, OUTPUT);
-    digitalWriteFast(_pin, LOW);
+    digitalWrite(_pin, LOW);
 }
 
 /**
@@ -23,15 +23,18 @@ bool DigitalOutput::get_state() {return _IO_state; }
  * @brief Turn on (set to HIGH) the output pin.
  */
 void DigitalOutput::turn_on() {
+    if (_IO_state) return;
     _IO_state = 1;
-    digitalWrite(_pin, _IO_state);
+    digitalWrite(_pin, HIGH);
     return;
 }
+
 
 /**
  * @brief Turn off (set to LOW) the output pin.
  */
 void DigitalOutput::turn_off() {
+    if (!_IO_state) return;
     _IO_state = 0;
     digitalWrite(_pin, _IO_state);
     return;
