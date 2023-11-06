@@ -1,18 +1,16 @@
 #include <Arduino.h>
 
-// put function declarations here:
-int myFunction(int, int);
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+  Serial.begin(9600);
+  Serial1.begin(9600);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  if (Serial1.available()) {
+    uint8_t buffer;
+    int comms = Serial1.readBytes(&buffer, 1);
+    Serial.println(buffer);
+  }
 }
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
-}
