@@ -32,10 +32,11 @@ void SoleinoidValve::turn_on(unsigned long cur_time) {
     if (!_is_on) {
         analogWrite(_pin, (int) (256 * _pullin_voltage));
         if (cur_time - _previous_time_check > _pull_in_time_interval) {
-            Serial.println("HERE");
             _previous_time_check = cur_time;
             _is_on = true;
             _IO_state = 1;
+            Serial.print(_pin);
+            Serial.println(" turned ON");
         }
     } else {
         analogWrite(_pin, (int) (256 * _holding_voltage));
@@ -48,6 +49,7 @@ void SoleinoidValve::turn_on(unsigned long cur_time) {
  * @brief Turn off (set to LOW) the output pin.
  */
 void SoleinoidValve::turn_off() {
+    if (!_IO_state) return;
     _IO_state = 0;
     _is_on = false;
     analogWrite(_pin, 0);
