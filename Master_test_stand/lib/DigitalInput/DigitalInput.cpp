@@ -12,7 +12,7 @@ DigitalInput::DigitalInput(int pin) {
     pinMode(_pin, INPUT);
 }
 
-
+// TODO: better implementation of debouncing
 /**
  * @brief Reads the value of the digital input pin
 */
