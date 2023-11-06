@@ -17,7 +17,7 @@
 #define LOADCELL_PIN 17
 // Digital IN
 #define ESTOP_PIN 32
-#define BAUD_RATE 115200 // TODO: maybe slower to ensure reliable transmission
+#define BAUD_RATE 9600 // TODO: maybe slower to ensure reliable transmission
 
 // OUTPUT PINS
 #define STOPLIGHT_GREEN_PIN 4
@@ -33,7 +33,8 @@ enum State {
   POWER_ON,
   KSI,
   LAUNCH,
-  FAIL
+  FAIL, 
+  TEST
 };
 State STATE;
 bool first_time_in_state = true;
@@ -69,10 +70,12 @@ u_int8_t bit_heartbeat = 1 << 7;
 
 void setup() {
 	Serial.begin(115200);
+	Serial1.begin(BAUD_RATE);
 	Serial.println("POWER_ON");
 	serial_data.print_header();
 	serial_data.set_start_time();
 	STATE = POWER_ON; 
+	STATE = TEST;
 }
 
 /************************************************
@@ -194,6 +197,13 @@ void fail_state () {
 	return;
 };
 
+int random_var = 0;
+void test_state() {
+	Serial.write(random_var);
+	random_var++;
+	delay(300);
+}
+
 
 void loop() {
 	if (!estop.read()) {
@@ -206,7 +216,8 @@ void loop() {
 		if (comms == -1) { STATE = FAIL; } // failed reading serial transmission
 		bit_heartbeat ^= 1 << 7; // toggle heartbeat
 		// if (!(comms & bit_valid) || !(comms & bit_heartbeat)) { STATE = FAIL; }
-		if (!(comms & bit_valid)) { STATE = FAIL; } // valid bit wasn't sent through
+		// if (!(comms & bit_valid)) { STATE = FAIL; } // valid bit wasn't sent through
+		Serial.println(comms);
 	}
 
 	switch (STATE) {
@@ -248,6 +259,9 @@ void loop() {
 				first_time_in_state = true;
 			}
 			break;
+
+		case (TEST):
+			test_state();
 
 		default:
 			STATE = POWER_ON;
