@@ -4,49 +4,51 @@ Warning: Multiple definitions of model "2scr375p" Type: BJT
 Warning: Multiple definitions of model "bc857b" Type: BJT
 Warning: Multiple definitions of model "bc847c" Type: BJT
 Warning: Multiple definitions of model "bc847b" Type: BJT
-WARNING: Node NC_02 is floating.
-WARNING: Node NC_03 is floating.
-WARNING: Node NC_04 is floating.
+Direct Newton iteration failed to find .op point.  (Use ".option noopiter" to skip.)
+Starting Gmin stepping
+Gmin = 10
+Gmin = 1.07374
+Gmin = 0.115292
+Gmin = 0.0123794
+Gmin = 0.00132923
+Gmin = 0.000142725
+Gmin = 1.5325e-05
+Gmin = 1.6455e-06
+Gmin = 1.76685e-07
+Gmin = 1.89714e-08
+Gmin = 2.03704e-09
+Gmin = 2.18725e-10
+Gmin = 2.34854e-11
+Gmin = 2.52173e-12
+Gmin = 2.70769e-13
+Gmin = 0
+Gmin stepping succeeded in finding the operating point.
 
-WARNING: Less than two connections to node nc_01.  This node is used by m5.
-WARNING: Less than two connections to node nc_03.  This node is used by m5.
-Direct Newton iteration for .op point succeeded.
 Heightened Def Con from 0.002 to 0.002
 Heightened Def Con from 0.002 to 0.002
+Heightened Def Con from 0.002 ++to 0.002
 Heightened Def Con from 0.002 to 0.002
-Heightened Def Con from 0.002 to 0.002
-Heightened Def Con from 0.002 to 0.002
-Heightened Def Con from 0.002 to 0.002
-Heightened Def Con from 0.002 to 0.002
-Heightened Def Con from 0.002 to 0.002
-Heightened Def Con from 0.002 +to 0.002
-Heightened Def Con from 0.002 to 0.002
-Heightened Def Con from 0.002 to 0.002
-Heightened Def Con from 0.002 +to 0.002
-Heightened Def Con from 0.002 to 0.002
-Heightened Def Con from 0.002 to 0.002
-Heightened Def Con from 0.002 to 0.002
-Heightened Def Con from 0.004 to 0.004
+Heightened Def Con from 0.003 to 0.003
+Heightened Def Con from 0.003 to 0.003
+Heightened Def Con from 0.004 +++++++++++++++++to 0.004
 Heightened Def Con from 0.004 to 0.004
 Heightened Def Con from 0.006 to 0.006
-Heightened Def Con from 0.008 to 0.008
-Heightened Def Con from 0.008 to 0.008
 
-Date: Thu Oct 26 23:30:22 2023
-Total elapsed time: 0.177 seconds.
+Date: Mon Oct 30 00:05:14 2023
+Total elapsed time: 0.203 seconds.
 
 tnom = 27
 temp = 27
 method = modified trap
-totiter = 10608
-traniter = 10565
-tranpoints = 2718
-accept = 2216
-rejected = 524
-matrix size = 90
-fillins = 20
+totiter = 8814
+traniter = 8388
+tranpoints = 2490
+accept = 2033
+rejected = 485
+matrix size = 87
+fillins = 46
 solver = Normal
-Avg thread counts: 2.2/5.8/6.2/2.2
-Matrix Compiler1:     362 opcodes  1.0/[0.5]/0.7
-Matrix Compiler2: 7.70 KB object code size  0.4/0.6/[0.3]
+Avg thread counts: 2.5/6.3/6.4/2.5
+Matrix Compiler1: 7.73 KB object code size  1.2/0.5/[0.5]
+Matrix Compiler2: 7.85 KB object code size  0.4/0.7/[0.4]
 
