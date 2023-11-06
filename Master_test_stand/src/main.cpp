@@ -197,23 +197,24 @@ void fail_state () {
 	return;
 };
 
-int random_var = 0;
+uint8_t random_var = 0;
 void test_state() {
-	Serial.write(random_var);
+	Serial1.write(random_var);
 	random_var++;
 	delay(300);
+	if (random_var & 0xF) red_light.toggle();
 }
 
 
 void loop() {
-	if (!estop.read()) {
-		STATE = FAIL;
-	}
+	// if (!estop.read()) {
+	// 	STATE = FAIL;
+	// }
 
 	// TODO: check if working
 	if (Serial.available()) {
 		comms = Serial.read();
-		if (comms == -1) { STATE = FAIL; } // failed reading serial transmission
+		// if (comms == -1) { STATE = FAIL; } // failed reading serial transmission
 		bit_heartbeat ^= 1 << 7; // toggle heartbeat
 		// if (!(comms & bit_valid) || !(comms & bit_heartbeat)) { STATE = FAIL; }
 		// if (!(comms & bit_valid)) { STATE = FAIL; } // valid bit wasn't sent through
@@ -263,6 +264,7 @@ void loop() {
 		case (TEST):
 			test_state();
 
+			break;
 		default:
 			STATE = POWER_ON;
 	}
