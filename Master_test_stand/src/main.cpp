@@ -211,8 +211,8 @@ void loop() {
 	}
 
 	// TODO: check if working
-	if (Serial.available()) {
-		comms = Serial.read();
+	if (Serial1.available()) {
+		comms = Serial1.read();
 		if (comms == -1) { STATE = FAIL; } // failed reading serial transmission
 		bit_heartbeat ^= 1 << 7; // toggle heartbeat
 		// if (!(comms & bit_valid) || !(comms & bit_heartbeat)) { STATE = FAIL; }
