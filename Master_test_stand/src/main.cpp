@@ -57,7 +57,7 @@ Transducer ducer_arr[] = {ducer1, ducer2, ducer3};
 
 // b7 | b6 | b5 | b4 | b3 | b2 | b1 | b0
 // heartbeat | valid | sw_ign | sw_launch | sw_oxygen | sw_fuel | launch_btn | ksi 
-int comms_buffer;
+int comms_status;
 uint8_t comms = 0x00;
 const u_int8_t bit_ksi = 1 << 0;
 const u_int8_t bit_launch_btn = 1 << 1;
@@ -71,10 +71,14 @@ u_int8_t bit_heartbeat = 1 << 7;
 void setup() {
 	Serial.begin(115200);
 	Serial1.begin(BAUD_RATE);
-	Serial.println("POWER_ON");
-	serial_data.print_header();
 	serial_data.set_start_time();
 	STATE = POWER_ON; 
+	
+	// while (1) {
+	// 	Serial.println("WAITING FOR VALID BIT");
+	// 	comms_status = Serial1.readBytes(&comms, 1);
+	// 	if (comms & bit_valid) break;
+	// }
 	STATE = TEST;
 }
 
@@ -197,12 +201,12 @@ void fail_state () {
 	return;
 };
 
-uint8_t random_var = 0;
 void test_state() {
-	Serial1.write(random_var);
-	random_var++;
-	delay(300);
-	if (random_var & 0xF) red_light.toggle();
+	serial_data.accummulate_data(ducer_arr);
+	serial_data.print_serial_data();
+	serial_data.send_serial_data();
+	delay(50);
+	return;
 }
 
 
@@ -211,29 +215,28 @@ void loop() {
 	// 	STATE = FAIL;
 	// }
 
-	// TODO: check if working
-	if (Serial.available()) {
-		comms = Serial.read();
+	if (Serial1.available()) {
+		comms_status = Serial1.readBytes(&comms, 1);
+		
 		// if (comms == -1) { STATE = FAIL; } // failed reading serial transmission
-		bit_heartbeat ^= 1 << 7; // toggle heartbeat
+		// bit_heartbeat ^= 1 << 7; // toggle heartbeat
 		// if (!(comms & bit_valid) || !(comms & bit_heartbeat)) { STATE = FAIL; }
 		// if (!(comms & bit_valid)) { STATE = FAIL; } // valid bit wasn't sent through
-		Serial.println(comms);
+		Serial.print("from comms: ");
+		Serial.println(comms, BIN);
 	}
 
 	switch (STATE) {
 		case (POWER_ON): 
 			power_on_state();
-			// Serial.println("POWERON state");
 			if (comms & bit_ksi) {
 				STATE = KSI;
 				first_time_in_state = true;
 			}
 			break;
+
 		case (KSI): 
 			ksi_state();
-			// Serial.println("KSI state");
-
 			if (comms & bit_launch_btn) {
 				STATE = LAUNCH;
 				first_time_in_state = true;
@@ -243,18 +246,17 @@ void loop() {
 				first_time_in_state = true;
 			}
 			break;
+
 		case (LAUNCH): 
 			launch_state();
-			// Serial.println("LAUNCH state");
-
 			if (!(comms & bit_ksi)) {
 				STATE = POWER_ON;
 				first_time_in_state = true;
 			}
 			break;
+
 		case (FAIL): 
 			fail_state();
-
 			if (!(comms & bit_ksi)) {
 				STATE = POWER_ON;
 				first_time_in_state = true;
@@ -263,7 +265,7 @@ void loop() {
 
 		case (TEST):
 			test_state();
-
+			Serial.println("looping again");
 			break;
 		default:
 			STATE = POWER_ON;
