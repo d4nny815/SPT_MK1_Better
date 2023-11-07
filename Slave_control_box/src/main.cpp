@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <DigitalInput.h>
+#include <string.h>
 
 // INPUT PINS
 //Digital IN
@@ -32,6 +33,13 @@ const u_int8_t bit_sw_launch = 1 << 4;
 const u_int8_t bit_sw_ign = 1 << 5;
 const u_int8_t bit_valid = 1 << 6;
 u_int8_t bit_heartbeat = 1 << 7;
+
+String timeString;
+uint64_t time_data = 0;
+uint16_t ducer1_data = 0;
+uint16_t ducer2_data = 0;
+uint16_t ducer3_data = 0;
+uint16_t loadcell_data = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -92,8 +100,37 @@ void loop() {
    }
 
 Serial1.write(comms);
- Serial.print("bits: ");
-Serial.println(comms, BIN);
+//Serial.println(comms, BIN);
 
-delay(1000);
+//Reads the incoming data from master
+byte buffer[16];
+if (Serial1.available()){
+  Serial1.readBytes(buffer, 16);
+
+  for (int i=0; i<8; i++) {
+    time_data |= buffer[i] << (56 - (i * 8));
+  }
+//puts the data into a variable
+  ducer1_data = buffer[8] << 8 | buffer[9];
+  ducer2_data = buffer[10] << 8 | buffer[11];
+  ducer3_data = buffer[12] << 8 | buffer[13];
+  loadcell_data = buffer[14] << 8 | buffer[15];
+  
+
+  String data = String(time_data) + "," + String(ducer1_data) + "," 
+                + String(ducer2_data) + "," + String(ducer3_data) + ","
+                 + String(loadcell_data);
+  Serial.println(data);
+
+  time_data = 0;
+  ducer1_data = 0;
+  ducer2_data = 0;
+  ducer3_data = 0;
+  loadcell_data = 0;
+
+}
+
+
+
+delay(30);
 }
