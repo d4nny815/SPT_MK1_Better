@@ -10,21 +10,22 @@
 
 
 // INPUT PINS
+// TODO: maybe slower to ensure reliable transmission
+#define BAUD_RATE 9600  // BAUDRATE for teensy communications
 // Analog IN
 #define TRANSDUCER1_PIN 14
 #define TRANSDUCER2_PIN 15
 #define TRANSDUCER3_PIN 16
 #define LOADCELL_PIN 17
 // Digital IN
-#define ESTOP_PIN 32
-#define BAUD_RATE 9600 // TODO: maybe slower to ensure reliable transmission
+#define ESTOP_PIN 2
 
 // OUTPUT PINS
 #define STOPLIGHT_GREEN_PIN 4
 #define STOPLIGHT_YELLOW_PIN 5
 #define STOPLIGHT_RED_PIN 6
-#define FUEL_VALUE_PIN 7
-#define OXYGEN_VALVE_PIN 8
+#define OXYGEN_VALVE_PIN 7
+#define FUEL_VALUE_PIN 8
 #define IGN_PIN 9
 // PINS 10-13 are reserved for SPI communication
 
@@ -39,15 +40,14 @@ enum State {
 State STATE;
 bool first_time_in_state = true;
 
-
 // Instantiate every component in the system
 SerialData serial_data;
 DigitalOutput red_light(STOPLIGHT_RED_PIN);  // lights are active low
 DigitalOutput yellow_light(STOPLIGHT_YELLOW_PIN);  // lights are active low
 DigitalOutput green_light(STOPLIGHT_GREEN_PIN);  // lights are active low
 DigitalOutput ign_wire(IGN_PIN);
-SoleinoidValve oxygen_valve(OXYGEN_VALVE_PIN, 100, 60);
-SoleinoidValve fuel_valve(FUEL_VALUE_PIN, 100, 60);
+SoleinoidValve oxygen_valve(OXYGEN_VALVE_PIN, 100, 90);
+SoleinoidValve fuel_valve(FUEL_VALUE_PIN, 100, 90);
 DigitalInput estop(ESTOP_PIN);
 Transducer ducer1(TRANSDUCER1_PIN);
 Transducer ducer2(TRANSDUCER2_PIN);
@@ -72,14 +72,19 @@ void setup() {
 	Serial.begin(115200);
 	Serial1.begin(BAUD_RATE);
 	serial_data.set_start_time();
-	STATE = POWER_ON; 
 	
 	// while (1) {
 	// 	Serial.println("WAITING FOR VALID BIT");
 	// 	comms_status = Serial1.readBytes(&comms, 1);
-	// 	if (comms & bit_valid) break;
+	// 	if (comms & bit_valid) {
+	// 		STATE = POWER_ON; 
+	//		serial_data.set_start_time();
+	// 		break;
+	// 	} 
 	// }
-	STATE = TEST;
+	STATE = POWER_ON; 
+
+	// STATE = TEST;
 }
 
 /************************************************
@@ -111,6 +116,7 @@ void setup() {
 
 void power_on_state () {
 	if (first_time_in_state) {
+		Serial.println("POWERON state entry");
 		oxygen_valve.turn_off();
 		fuel_valve.turn_off();
 		green_light.turn_off();
@@ -120,6 +126,8 @@ void power_on_state () {
 	}
 
 	serial_data.accummulate_data(ducer_arr);
+	serial_data.send_serial_data();
+
 	// serial_data.print_serial_data(); // TODO: uncomment this line to print data
 	return;
 };
@@ -127,6 +135,8 @@ void power_on_state () {
 
 void ksi_state () {
 	if (first_time_in_state) {
+		Serial.println("KSI state entry");
+
 		oxygen_valve.turn_off();
 		fuel_valve.turn_off();
 		green_light.turn_on();
@@ -153,12 +163,15 @@ void ksi_state () {
 	}
 
 	serial_data.accummulate_data(ducer_arr);
+	serial_data.send_serial_data();
+
 	// serial_data.print_serial_data();  // TODO: uncomment this line to print data
 	return;
 };
 
 void launch_state () {
 	if (first_time_in_state) {
+		Serial.println("LAUNCH state entry");
 		oxygen_valve.turn_off();
 		fuel_valve.turn_off();
 		green_light.turn_on();
@@ -168,7 +181,7 @@ void launch_state () {
 	}
 	
 	if ((comms & bit_sw_launch)) {
-		oxygen_valve.turn_on(); // TODO: add millis to class
+		oxygen_valve.turn_on(); 
 		fuel_valve.turn_on();
 	}
 	else {
@@ -181,6 +194,7 @@ void launch_state () {
 
 
 	serial_data.accummulate_data(ducer_arr);
+	serial_data.send_serial_data();
 	// serial_data.print_serial_data();
 	return;
 };
@@ -189,6 +203,7 @@ void fail_state () {
 	green_light.toggle();
 	yellow_light.toggle();
 	red_light.toggle();
+	Serial.println("FAIL STATE");
 
 	delay(1000);
 
@@ -202,10 +217,14 @@ void fail_state () {
 };
 
 void test_state() {
+	oxygen_valve.turn_on();
+	fuel_valve.turn_on();
+
+	// Serial.println("TEST");
+
 	serial_data.accummulate_data(ducer_arr);
-	serial_data.print_serial_data();
-	serial_data.send_serial_data();
-	delay(50);
+	// serial_data.print_serial_data();
+	// serial_data.send_serial_data();
 	return;
 }
 
@@ -222,13 +241,17 @@ void loop() {
 		// bit_heartbeat ^= 1 << 7; // toggle heartbeat
 		// if (!(comms & bit_valid) || !(comms & bit_heartbeat)) { STATE = FAIL; }
 		// if (!(comms & bit_valid)) { STATE = FAIL; } // valid bit wasn't sent through
-		Serial.print("from comms: ");
-		Serial.println(comms, BIN);
+		// Serial.print("from comms: ");
+		// Serial.println(comms, BIN);
 	}
+
+	
 
 	switch (STATE) {
 		case (POWER_ON): 
 			power_on_state();
+			// Serial.println("POWERON state");
+
 			if (comms & bit_ksi) {
 				STATE = KSI;
 				first_time_in_state = true;
@@ -237,6 +260,7 @@ void loop() {
 
 		case (KSI): 
 			ksi_state();
+			// Serial.println("KSI state");
 			if (comms & bit_launch_btn) {
 				STATE = LAUNCH;
 				first_time_in_state = true;
@@ -249,6 +273,8 @@ void loop() {
 
 		case (LAUNCH): 
 			launch_state();
+			// Serial.println("LAUNCH state");
+
 			if (!(comms & bit_ksi)) {
 				STATE = POWER_ON;
 				first_time_in_state = true;
@@ -257,6 +283,8 @@ void loop() {
 
 		case (FAIL): 
 			fail_state();
+			// Serial.println("FAIL state");
+
 			if (!(comms & bit_ksi)) {
 				STATE = POWER_ON;
 				first_time_in_state = true;
@@ -265,7 +293,7 @@ void loop() {
 
 		case (TEST):
 			test_state();
-			Serial.println("looping again");
+
 			break;
 		default:
 			STATE = POWER_ON;

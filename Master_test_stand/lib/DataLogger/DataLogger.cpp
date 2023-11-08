@@ -92,5 +92,7 @@ void SerialData::send_serial_data() {
 		// Serial.print(" -> buffer string: ");
 		// Serial.println(data);
 		Serial1.write(buffer, 16);	
+		delay(50);
+
 	return;
 }
