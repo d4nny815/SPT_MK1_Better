@@ -230,10 +230,11 @@ void test_state() {
 
 
 void loop() {
-	// if (!estop.read()) {
-	// 	STATE = FAIL;
-	// }
+	if (!estop.read()) {
+		STATE = FAIL;
+	}
 
+=======
 	if (Serial1.available()) {
 		comms_status = Serial1.readBytes(&comms, 1);
 		
@@ -294,7 +295,6 @@ void loop() {
 		case (TEST):
 			test_state();
 
-			break;
 		default:
 			STATE = POWER_ON;
 	}
