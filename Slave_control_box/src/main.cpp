@@ -100,7 +100,7 @@ void loop() {
    }
 
 Serial1.write(comms);
-//Serial.println(comms, BIN);
+Serial.println(comms, BIN);
 
 //Reads the incoming data from master
 byte buffer[16];
