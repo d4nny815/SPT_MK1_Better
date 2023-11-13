@@ -234,7 +234,6 @@ void loop() {
 		STATE = FAIL;
 	}
 
-=======
 	if (Serial1.available()) {
 		comms_status = Serial1.readBytes(&comms, 1);
 		

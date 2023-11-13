@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include <DigitalInput.h>
-#include <string.h>
 
 // INPUT PINS
 //Digital IN
