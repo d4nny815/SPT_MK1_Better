@@ -20,15 +20,11 @@ bool DigitalInput::read() {
     _btn_state = digitalRead(_pin);
     _cur_time = micros();
 
-    // Check if the button state has changed
-    if (_btn_state != _last_btn_state) {
-        // Record the time of the state change for debounce
-        _prev_time_check = micros();
-    }
-
     // Check if enough time has passed since the last state change
     if (_cur_time - _prev_time_check >= _debounce_time_us) {
         // Return the current button state
+        _prev_time_check = _cur_time;
+        _last_btn_state = _btn_state;
         return _btn_state;
     }
 

@@ -33,6 +33,12 @@ const u_int8_t bit_sw_ign = 1 << 5;
 const u_int8_t bit_valid = 1 << 6;
 u_int8_t bit_heartbeat = 1 << 7;
 
+unsigned long cur_time;
+unsigned long prev_time_sent = millis();
+unsigned long transmit_time = 50;
+
+
+
 String timeString;
 uint64_t time_data = 0;
 uint16_t ducer1_data = 0;
@@ -98,9 +104,23 @@ void loop() {
      comms = comms & (bit_sw_ign ^ 0xff);
    }
 
-Serial1.write(comms);
-Serial.println(comms, BIN);
 
+  cur_time = millis();
+  // Serial.println(cur_time - prev_time_sent);
+  if (cur_time - prev_time_sent >= transmit_time) {
+    prev_time_sent = cur_time;
+    Serial.println(comms, BIN);
+    Serial1.write(comms);
+
+  }
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
 //Reads the incoming data from master
 byte buffer[16];
 if (Serial1.available()){
@@ -131,5 +151,5 @@ if (Serial1.available()){
 
 
 
-delay(30);
+
 }
