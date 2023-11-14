@@ -3,17 +3,17 @@
 
 
 /**
- * @brief Constructor for DigitalOutput class
- * @param pin_number - pin that component is plugged into on the board
- * @param pullin_voltage - percentage of the solenoid voltage that is required to pull in the solenoid
- * @param holding_voltage - percentage of the solenoid voltage that is required to hold the solenoid
- * @return DigitalOutput object
+ * @brief Constructor for SoleinoidValve class
+ * @param pin The pin number of the digital input
+ * @param pullin_voltage The voltage percentage to turn on the solenoid valve
+ * @param holding_voltage The voltage percentage to hold the solenoid valve
+ * @return SoleinoidValve object
 */
-SoleinoidValve::SoleinoidValve(int pin, u_int8_t pullin_voltage, u_int8_t holding_voltage) {
+SoleinoidValve::SoleinoidValve(int pin, uint8_t pullin_voltage, uint8_t holding_voltage) {
     _pin = pin;
     _IO_state = 0;
-    _pullin_voltage = (pullin_voltage % 101) / 100.0;
-    _holding_voltage = (holding_voltage % 101) / 100.0;
+    _pullin_voltage = constrain(pullin_voltage, 0, 100) / 100.0;
+    _holding_voltage = constrain(holding_voltage, 0, 100) / 100.0;
     _previous_time_check = millis();
     _is_on = false;
     pinMode(_pin, OUTPUT);
@@ -25,7 +25,6 @@ bool SoleinoidValve::get_state() {return _IO_state; }
 
 /**
  * @brief turn on the solenoid valve at pullin voltage for a certain amount of time then use holding voltage
- * @param cur_time - current time in milliseconds
 */
 void SoleinoidValve::turn_on() {
     if (_IO_state) return;    

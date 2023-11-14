@@ -1,7 +1,6 @@
 #ifndef SoleinoidValve_h
 #define SoleinoidValve_h
 #include <Arduino.h>
-#include <stdlib.h>
 
 class SoleinoidValve {
     private:
@@ -16,7 +15,7 @@ class SoleinoidValve {
         unsigned long _pull_in_time_interval = 30;
 
     public:
-        SoleinoidValve(int pin, u_int8_t pullin_voltage, u_int8_t holding_voltage);
+        SoleinoidValve(int pin, uint8_t pullin_voltage, uint8_t holding_voltage);
         bool get_state();
         void turn_on();
         void turn_off();

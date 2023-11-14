@@ -4,26 +4,27 @@
 
 
 /**
- * @brief Constructor for the Transducer class
+ * @brief Constructor for Transducer class
 */
 Transducer::Transducer(int pin) {
     _pin = pin;
     pinMode(_pin, INPUT);
-    _minVolt = (_minCurrent * 100 / 3.3) * 1024;
-    _maxVolt = (_maxCurrent * 100 / 3.3) * 1024; 
+    _minVolt = (uint16_t)(_minCurrent * _resistor / 3.3 * 1024);
+    _maxVolt = (uint16_t)(_maxCurrent * _resistor / 3.3 * 1024);
+
 }
 
 /**
- * @brief Returns the PSI of the transducer
- * @return PSI of the transducer from 0 to 1000
+ * @brief Reads the analog voltage from the transducer and converts it to PSI
+ * @return PSI value
 */
-u_int16_t Transducer::get_PSI(){
-    int raw = analogRead(_pin);
-    if (raw < _minVolt) {
-        _minVolt = raw;
+uint16_t Transducer::get_PSI(){
+    _raw_reading = analogRead(_pin);
+    if (_raw_reading < _minVolt) {
+        _raw_reading = _minVolt;
     }
-    if (raw > _maxVolt) {
-        _maxVolt = raw;
+    else if (_raw_reading > _maxVolt) {
+        _raw_reading = _maxVolt;
     }
-    return map(raw, _minVolt, _maxVolt, 0, 1000);
+    return map(_raw_reading, _minVolt, _maxVolt, 0, 1000);
 }
