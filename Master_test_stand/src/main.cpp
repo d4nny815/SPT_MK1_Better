@@ -72,7 +72,7 @@ const u_int8_t bit_valid = 1 << 6;
 u_int8_t bit_heartbeat = 1 << 7;
 
 void setup() {
-	// Serial.begin(115200);
+	Serial.begin(115200);
 	Serial1.begin(BAUD_RATE);
 	serial_data.set_start_time();
 	STATE = POWER_ON; 

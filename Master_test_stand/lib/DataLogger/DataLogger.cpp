@@ -17,7 +17,7 @@ SerialData::SerialData() {
 
 
 void SerialData::set_start_time() {
-	START_TIME_US = micros();
+	START_TIME_US = millis();
 	return;
 }
 
@@ -27,7 +27,7 @@ void SerialData::set_start_time() {
  * @param transducers_arr array of transducers
 */
 void SerialData::accummulate_data(Transducer transducers_arr[], Loadcell loadcell) {
-	time = micros() - START_TIME_US;
+	time = millis() - START_TIME_US;
 	transducer1_data = transducers_arr[0].get_PSI();
 	transducer2_data = transducers_arr[1].get_PSI();
 	transducer3_data = transducers_arr[2].get_PSI();
@@ -56,7 +56,7 @@ void SerialData::print_serial_data() {
     data = String(time) + "," + String(transducer1_data) + "," + 
 					String(transducer2_data) + "," + String(transducer3_data) + 
 					"," + String(loadcell_data);
-	// Serial.println(data);
+	Serial.println(data);
     return;
 }
 
@@ -85,6 +85,7 @@ void SerialData::send_serial_data() {
 
 		_cur_time = millis();
 		if (_cur_time - _prev_time_check >= _transmit_time) {
+			// print_serial_data();
 			Serial1.write(buffer, 16);	
 		}
 	return;

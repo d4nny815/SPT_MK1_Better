@@ -89,6 +89,7 @@ void loop() {
 			// Serial.println(transmit_data, BIN);
 			Serial2.write(transmit_data);
 		}
+
   	}
 
 	if (Serial2.available()){
@@ -104,7 +105,7 @@ void loop() {
   	  	loadcell_data = buffer[14] << 8 | buffer[15];
 
 
-  	  	received_data = String(time_data / 10000) + "," + String(ducer1_data) + "," 
+  	  	received_data = String(time_data) + "," + String(ducer1_data) + "," 
   	                + String(ducer2_data) + "," + String(ducer3_data) + ","
   	                 + String(loadcell_data);
   	  	Serial.println(received_data);
