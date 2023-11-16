@@ -1,18 +1,27 @@
 #include "Loadcell.h"
 #include "Arduino.h"
 
-Loadcell::Loadcell(int dout_pin, int sck_pin, float calibration_factor) {
-    _dout_pin = dout_pin;
-    _clk_pin = sck_pin;
-    _calibration_factor = calibration_factor;
-    _loadcell.begin(_dout_pin, _clk_pin);
-    _loadcell.set_scale(_calibration_factor);
-    _loadcell.tare();
+Loadcell::Loadcell(int pin, uint16_t loadcell_rating) {
+    _pin = pin;
+    _loadcell_rating_lbs = loadcell_rating * 2.2;
+    pinMode(_pin, INPUT);
+    _minVolt = (uint16_t)(_minCurrent * _resistor / 3.3 * 1024);
+    _maxVolt = (uint16_t)(_maxCurrent * _resistor / 3.3 * 1024);
+
 }
 
-double Loadcell::get_value_lbs() {
-    double ounces = _loadcell.get_units(5) * 0.035274;
-    return ounces;
+uint16_t Loadcell::get_lbs() {
+    _raw_reading = analogRead(_pin);
+    // Serial.print(_raw_reading);
+    // Serial.print(" -> ");
+    if (_raw_reading < _minVolt) {
+        _raw_reading = _minVolt;
+    }
+    else if (_raw_reading > _maxVolt) {
+        _raw_reading = _maxVolt;
+    }
+    // Serial.println(map(_raw_reading, _minVolt, _maxVolt, 0, _loadcell_rating_lbs));
+    return map(_raw_reading, _minVolt, _maxVolt, 0, _loadcell_rating_lbs);
 }
 
 

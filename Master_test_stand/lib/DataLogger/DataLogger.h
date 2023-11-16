@@ -14,13 +14,17 @@ class SerialData {
 	uint16_t transducer3_data;
 	uint16_t loadcell_data;
 
+	String data;
 	byte buffer[16];
+	
+	unsigned long _cur_time;
+    unsigned long _prev_time_check;
+    unsigned long _transmit_time = 50;
 
 	public:
 		SerialData();
-		// void accummulate_data(Transducer transducers_arr[], Loadcell Loadcell); // TODO: implement this
+		void accummulate_data(Transducer transducers_arr[], Loadcell Loadcell);
 		void set_start_time();
-		void accummulate_data(Transducer transducers_arr[]);
 		void print_header();
 		void print_serial_data();
 		void send_serial_data();
