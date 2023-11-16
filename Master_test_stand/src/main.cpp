@@ -5,29 +5,29 @@
 #include "DigitalOutput.h"
 #include "SolenoidValve.h"
 #include "Transducer.h"
-// #include "LoadCell.h"
+#include "LoadCell.h"
 #include "DataLogger.h"
 
 
 // INPUT PINS
-// TODO: maybe slower to ensure reliable transmission
 #define BAUD_RATE 9600  // BAUDRATE for teensy communications
 // Analog IN
-#define TRANSDUCER1_PIN 14
-#define TRANSDUCER2_PIN 15
+#define TRANSDUCER1_PIN 18
+#define TRANSDUCER2_PIN 17
 #define TRANSDUCER3_PIN 16
-#define LOADCELL_PIN 17
+#define LOADCELL_PIN 19
 // Digital IN
-#define ESTOP_PIN 2
+#define ESTOP_PIN 32
 
 // OUTPUT PINS
-#define STOPLIGHT_GREEN_PIN 4
-#define STOPLIGHT_YELLOW_PIN 5
-#define STOPLIGHT_RED_PIN 6
+#define STOPLIGHT_GREEN_PIN 2
+#define STOPLIGHT_YELLOW_PIN 3
+#define STOPLIGHT_RED_PIN 4
 #define OXYGEN_VALVE_PIN 7
 #define FUEL_VALUE_PIN 8
 #define IGN_PIN 9
-// PINS 10-13 are reserved for SPI communication
+#define out1_pin 30
+#define out2_pin 31
 
 // Define the states of the system
 enum State {
@@ -46,8 +46,11 @@ DigitalOutput red_light(STOPLIGHT_RED_PIN);  // lights are active low
 DigitalOutput yellow_light(STOPLIGHT_YELLOW_PIN);  // lights are active low
 DigitalOutput green_light(STOPLIGHT_GREEN_PIN);  // lights are active low
 DigitalOutput ign_wire(IGN_PIN);
+DigitalOutput out1(out1_pin);
+DigitalOutput out2(out2_pin);
 SoleinoidValve oxygen_valve(OXYGEN_VALVE_PIN, 100, 90);
 SoleinoidValve fuel_valve(FUEL_VALUE_PIN, 100, 90);
+Loadcell loadcell(LOADCELL_PIN, 100);
 DigitalInput estop(ESTOP_PIN);
 Transducer ducer1(TRANSDUCER1_PIN);
 Transducer ducer2(TRANSDUCER2_PIN);
@@ -69,19 +72,9 @@ const u_int8_t bit_valid = 1 << 6;
 u_int8_t bit_heartbeat = 1 << 7;
 
 void setup() {
-	Serial.begin(115200);
+	// Serial.begin(115200);
 	Serial1.begin(BAUD_RATE);
 	serial_data.set_start_time();
-	
-	// while (1) {
-	// 	Serial.println("WAITING FOR VALID BIT");
-	// 	comms_status = Serial1.readBytes(&comms, 1);
-	// 	if (comms & bit_valid) {
-	// 		STATE = POWER_ON; 
-	//		serial_data.set_start_time();
-	// 		break;
-	// 	} 
-	// }
 	STATE = POWER_ON; 
 
 	// STATE = TEST;
@@ -116,7 +109,8 @@ void setup() {
 
 void power_on_state () {
 	if (first_time_in_state) {
-		Serial.println("POWERON state entry");
+		// Serial.println("POWERON state entry");
+		ign_wire.turn_off();
 		oxygen_valve.turn_off();
 		fuel_valve.turn_off();
 		green_light.turn_off();
@@ -124,19 +118,14 @@ void power_on_state () {
 		red_light.turn_on();
 		first_time_in_state = false;
 	}
-
-	serial_data.accummulate_data(ducer_arr);
-	serial_data.send_serial_data();
-
-	// serial_data.print_serial_data(); // TODO: uncomment this line to print data
 	return;
 };
 
 
 void ksi_state () {
 	if (first_time_in_state) {
-		Serial.println("KSI state entry");
-
+		// Serial.println("KSI state entry");
+		ign_wire.turn_off();
 		oxygen_valve.turn_off();
 		fuel_valve.turn_off();
 		green_light.turn_on();
@@ -161,17 +150,13 @@ void ksi_state () {
 		oxygen_valve.turn_off();
 		fuel_valve.turn_off();
 	}
-
-	serial_data.accummulate_data(ducer_arr);
-	serial_data.send_serial_data();
-
-	// serial_data.print_serial_data();  // TODO: uncomment this line to print data
 	return;
 };
 
 void launch_state () {
 	if (first_time_in_state) {
-		Serial.println("LAUNCH state entry");
+		// Serial.println("LAUNCH state entry");
+		ign_wire.turn_off();
 		oxygen_valve.turn_off();
 		fuel_valve.turn_off();
 		green_light.turn_on();
@@ -192,10 +177,6 @@ void launch_state () {
 	if ((comms & bit_sw_ign)) ign_wire.turn_on();	
 	else ign_wire.turn_off();
 
-
-	serial_data.accummulate_data(ducer_arr);
-	serial_data.send_serial_data();
-	// serial_data.print_serial_data();
 	return;
 };
 
@@ -203,54 +184,50 @@ void fail_state () {
 	green_light.toggle();
 	yellow_light.toggle();
 	red_light.toggle();
-	Serial.println("FAIL STATE");
 
-	delay(1000);
+	// Serial.println("FAIL");
 
 	ign_wire.turn_off();
 	oxygen_valve.turn_off();
 	fuel_valve.turn_off();
-
-	serial_data.accummulate_data(ducer_arr);
-	// serial_data.print_serial_data();
 	return;
 };
 
 void test_state() {
-	oxygen_valve.turn_on();
-	fuel_valve.turn_on();
-
-	// Serial.println("TEST");
-
-	serial_data.accummulate_data(ducer_arr);
-	// serial_data.print_serial_data();
-	// serial_data.send_serial_data();
 	return;
 }
 
-
 void loop() {
-	if (!estop.read()) {
+	if (!(digitalRead(ESTOP_PIN))) {
 		STATE = FAIL;
 	}
 
 	if (Serial1.available()) {
+
 		comms_status = Serial1.readBytes(&comms, 1);
 		
-		// if (comms == -1) { STATE = FAIL; } // failed reading serial transmission
-		// bit_heartbeat ^= 1 << 7; // toggle heartbeat
-		// if (!(comms & bit_valid) || !(comms & bit_heartbeat)) { STATE = FAIL; }
-		// if (!(comms & bit_valid)) { STATE = FAIL; } // valid bit wasn't sent through
+		if (comms == -1) { STATE = FAIL; } // failed reading serial transmission
+		if (!(comms & bit_valid)) { STATE = FAIL; } // valid bit wasn't sent through
 		// Serial.print("from comms: ");
 		// Serial.println(comms, BIN);
+		
 	}
 
-	
+	// if (Serial.available()) {
+	// 	comms_status = Serial.readBytes(&comms, 1);
+	// 	if (comms == -1) { STATE = FAIL; } // failed reading serial transmission
+	// 	if (!(comms & bit_valid)) { STATE = FAIL; } // valid bit wasn't sent through
+	// 	Serial.print("from comms: ");
+	// 	Serial.println(comms, BIN);
+	// }
+
+	serial_data.accummulate_data(ducer_arr, loadcell);
+	serial_data.send_serial_data();
+	// serial_data.print_serial_data();
 
 	switch (STATE) {
 		case (POWER_ON): 
 			power_on_state();
-			// Serial.println("POWERON state");
 
 			if (comms & bit_ksi) {
 				STATE = KSI;
@@ -260,7 +237,7 @@ void loop() {
 
 		case (KSI): 
 			ksi_state();
-			// Serial.println("KSI state");
+
 			if (comms & bit_launch_btn) {
 				STATE = LAUNCH;
 				first_time_in_state = true;
@@ -273,7 +250,6 @@ void loop() {
 
 		case (LAUNCH): 
 			launch_state();
-			// Serial.println("LAUNCH state");
 
 			if (!(comms & bit_ksi)) {
 				STATE = POWER_ON;
@@ -283,18 +259,20 @@ void loop() {
 
 		case (FAIL): 
 			fail_state();
-			// Serial.println("FAIL state");
 
-			if (!(comms & bit_ksi)) {
+			if (comms == 0xC0 && digitalRead(ESTOP_PIN)) {
 				STATE = POWER_ON;
 				first_time_in_state = true;
+				green_light.turn_off();
+				yellow_light.turn_off();
+				red_light.turn_off();
 			}
 			break;
 
 		case (TEST):
 			test_state();
-
+			break;
 		default:
-			STATE = POWER_ON;
+			STATE = FAIL;
 	}
 }

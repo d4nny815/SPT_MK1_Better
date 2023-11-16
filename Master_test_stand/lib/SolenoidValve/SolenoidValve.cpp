@@ -32,8 +32,8 @@ void SoleinoidValve::turn_on() {
         _current_time = millis();
         analogWrite(_pin, (int) (256 * _pullin_voltage));
         if (_current_time - _previous_time_check > _pull_in_time_interval) {
-            Serial.print("turned on");
-            Serial.println(_pin);
+            // Serial.print("turned on");
+            // Serial.println(_pin);
             _previous_time_check = _current_time;
             analogWrite(_pin, (int) (256 * _holding_voltage));
             _is_on = true;

@@ -89,9 +89,6 @@ void loop() {
 			// Serial.println(transmit_data, BIN);
 			Serial2.write(transmit_data);
 		}
-
-		// Serial.println(transmit_data, BIN);
-		// Serial2.write(transmit_data);
   	}
 
 	if (Serial2.available()){
@@ -115,10 +112,4 @@ void loop() {
   	  	time_data = ducer1_data = ducer2_data = ducer3_data = loadcell_data = 0;
   	}
 
-	// if (Serial.available()) {
-	// 	uint8_t human_data = Serial.read();
-	// 	Serial.println(human_data, BIN);
-	// 	Serial2.write(human_data);
-
-	// }
 }
