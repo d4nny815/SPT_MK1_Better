@@ -56,7 +56,12 @@ void SerialData::print_serial_data() {
     data = String(time) + "," + String(transducer1_data) + "," + 
 					String(transducer2_data) + "," + String(transducer3_data) + 
 					"," + String(loadcell_data);
-	Serial.println(data);
+
+	_cur_time = millis();
+	if (_cur_time - _prev_time_check >= _transmit_time) {
+		_prev_time_check = _cur_time;
+		Serial.println(data);
+	}
     return;
 }
 
@@ -83,9 +88,23 @@ void SerialData::send_serial_data() {
 		buffer[14] = (loadcell_data >> 8) & 0xff;	
 		buffer[15] = (loadcell_data) & 0xff;
 
+		// uint64_t rx_time = buffer[0] << 56 | buffer[1] << 48 | buffer[2] << 40 
+		// 					| buffer[3] << 32 | buffer[4] << 24 | buffer[5] << 16 
+		// 					| buffer[6] << 8 | buffer[7];
+		// uint16_t rx_ducer1 = buffer[8] << 8 | buffer[9];
+		// uint16_t rx_ducer2 = buffer[10] << 8 | buffer[11];
+		// uint16_t rx_ducer3 = buffer[12] << 8 | buffer[13];
+		// uint16_t rx_loadcell = buffer[14] << 8 | buffer[15];
+
+		// String rx_data = "RX: " + String(rx_time) + "," + String(rx_ducer1) + "," + 
+		// 			String(rx_ducer2) + "," + String(rx_ducer3) + 
+		// 			"," + String(rx_loadcell);
+
 		_cur_time = millis();
 		if (_cur_time - _prev_time_check >= _transmit_time) {
-			// print_serial_data();
+			_prev_time_check = _cur_time;
+			// rx_time = rx_ducer1 = rx_ducer2 = rx_ducer3 = rx_loadcell = 0;
+			// Serial.println(rx_data);
 			Serial1.write(buffer, 16);	
 		}
 	return;

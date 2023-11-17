@@ -19,7 +19,7 @@ class SerialData {
 	
 	unsigned long _cur_time;
     unsigned long _prev_time_check;
-    unsigned long _transmit_time = 50;
+    unsigned long _transmit_time = 30;
 
 	public:
 		SerialData();
