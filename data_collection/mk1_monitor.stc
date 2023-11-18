@@ -120,4 +120,4 @@ ChartTraceProperties = 6:Label=Trace 7	Color=&h00942192	Style=0	Width=1	MStyle=8
 ChartTraceProperties = 7:Label=Trace 8	Color=&h00FFB600	Style=0	Width=1	MStyle=8	Scale=0	Visible=True
 ChartTraceProperties = 8:Label=Trace 9	Color=&h00AA7942	Style=0	Width=1	MStyle=8	Scale=0	Visible=True
 KeepOnTop = false
-WindowPosition = -1,105,1440,734
+WindowPosition = 7,102,1440,734
