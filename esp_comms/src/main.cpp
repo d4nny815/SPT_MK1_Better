@@ -95,14 +95,13 @@ void loop() {
 	if (Serial2.available()){
   	    Serial2.readBytes(buffer, 16);
 
-  	    for (int i=0; i<8; i++) {
-  	      	time_data |= buffer[i] << (56 - (i * 8));
-  	    }
-
-  	  	ducer1_data = buffer[8] << 8 | buffer[9];
-  	  	ducer2_data = buffer[10] << 8 | buffer[11];
-  	  	ducer3_data = buffer[12] << 8 | buffer[13];
-  	  	loadcell_data = buffer[14] << 8 | buffer[15];
+  	    time_data = buffer[0] << 56 | buffer[1] << 48 | buffer[2] << 40 
+							| buffer[3] << 32 | buffer[4] << 24 | buffer[5] << 16 
+							| buffer[6] << 8 | buffer[7];
+		ducer1_data = buffer[8] << 8 | buffer[9];
+		ducer2_data = buffer[10] << 8 | buffer[11];
+		ducer3_data = buffer[12] << 8 | buffer[13];
+		loadcell_data = buffer[14] << 8 | buffer[15];
 
 
   	  	received_data = String(time_data) + "," + String(ducer1_data) + "," 

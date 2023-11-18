@@ -50,7 +50,7 @@ DigitalOutput out1(out1_pin);
 DigitalOutput out2(out2_pin);
 SoleinoidValve oxygen_valve(OXYGEN_VALVE_PIN, 100, 90);
 SoleinoidValve fuel_valve(FUEL_VALUE_PIN, 100, 90);
-Loadcell loadcell(LOADCELL_PIN, 100);
+Loadcell loadcell(LOADCELL_PIN, 50);
 DigitalInput estop(ESTOP_PIN);
 Transducer ducer1(TRANSDUCER1_PIN);
 Transducer ducer2(TRANSDUCER2_PIN);
@@ -181,9 +181,9 @@ void launch_state () {
 };
 
 void fail_state () {
-	green_light.toggle();
-	yellow_light.toggle();
-	red_light.toggle();
+	green_light.turn_off();
+	yellow_light.turn_off();
+	red_light.turn_off();
 
 	// Serial.println("FAIL");
 
@@ -203,14 +203,12 @@ void loop() {
 	}
 
 	if (Serial1.available()) {
-
 		comms_status = Serial1.readBytes(&comms, 1);
 		
 		if (comms == -1) { STATE = FAIL; } // failed reading serial transmission
 		if (!(comms & bit_valid)) { STATE = FAIL; } // valid bit wasn't sent through
 		// Serial.print("from comms: ");
 		// Serial.println(comms, BIN);
-		
 	}
 
 	// if (Serial.available()) {
