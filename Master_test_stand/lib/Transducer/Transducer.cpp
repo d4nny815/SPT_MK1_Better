@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <Arduino.h>
 #include "Transducer.h"
+#include <driver/adc.h>
 
 
 /**
@@ -19,12 +20,6 @@ Transducer::Transducer(int pin) {
  * @return PSI value
 */
 uint16_t Transducer::get_PSI(){
-    _raw_reading = analogRead(_pin);
-    if (_raw_reading < _minVolt) {
-        _raw_reading = _minVolt;
-    }
-    else if (_raw_reading > _maxVolt) {
-        _raw_reading = _maxVolt;
-    }
+    _raw_reading = adc1_get_raw((adc1_channel_t)_pin);
     return map(_raw_reading, _minVolt, _maxVolt, 0, 1000);
 }
