@@ -8,16 +8,21 @@
 #include "SolenoidValve.h"
 #include <Filters.h>
 #include <Filters/Butterworth.hpp>
+#include <esp_task_wdt.h>
+#include <Ticker.h>
 
 // // OUTPUT PINS
 DigitalOutput red_light(STOPLIGHT_RED_PIN);  // lights are active low
 DigitalOutput yellow_light(STOPLIGHT_YELLOW_PIN);  // lights are active low
 DigitalOutput green_light(STOPLIGHT_GREEN_PIN);  // lights are active low
 DigitalOutput ign_wire(IGN_PIN);
-DigitalOutput out1(out1_pin);
-DigitalOutput out2(out2_pin);
-SoleinoidValve oxygen_valve(OXYGEN_VALVE_PIN, 100, 90);
-SoleinoidValve fuel_valve(FUEL_VALUE_PIN, 100, 90);
+DigitalOutput valve1(VALVE1_PIN);
+DigitalOutput valve2(VALVE2_PIN);
+DigitalOutput valve3(VALVE3_PIN);
+DigitalOutput valve4(VALVE4_PIN);
+DigitalOutput estop_enable(ESTOP_ENABLE_PIN);
+SoleinoidValve oxygen_valve(OXYGEN_VALVE_PIN, 100, 60);
+SoleinoidValve fuel_valve(FUEL_VALUE_PIN, 100, 60);
 
 /* State Machine */
 enum SystemState {
@@ -39,7 +44,7 @@ const u_int8_t bit_sw_oxygen = 1 << 3;
 const u_int8_t bit_sw_launch = 1 << 4;
 const u_int8_t bit_sw_ign = 1 << 5;
 const u_int8_t bit_valid = 1 << 6;
-u_int8_t bit_heartbeat = 1 << 7;
+const u_int8_t bit_heartbeat = 1 << 7;
 
 /* ESP NOW */
 typedef struct {
@@ -57,19 +62,26 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   	memcpy(&incomingPacket, incomingData, sizeof(incomingPacket));
   	comms = incomingPacket.button_data;
-	// Serial.println(comms, BIN);
+	Serial.println(comms, BIN);
 }
 
 /* Watchdog Timer */
 
 
-
 // TODO: setup heartbeat timer
+void clear_heartbeat(void* parameter) {
+	for (;;) {
+		comms &= ~bit_heartbeat;
+		vTaskDelay(60000 / portTICK_PERIOD_MS); // 60 seconds
+	}
+}
 
 void setup() {
 	Serial.begin(115200);
 
 	// TODO: Setup Watchdog Timer
+	// set timer for 30 seconds
+
 
 	// Setup ADC
 	setup_ADC();
@@ -85,10 +97,11 @@ void setup() {
 	esp_now_add_peer(&peerInfo);
 	esp_now_register_recv_cb(OnDataRecv);
 
-	STATE = STATE_POWERON;
+	STATE = STATE_FAIL;
 	Serial.println("||||||||Setup complete||||||||");
 	set_start_time();
 	xTaskCreate(accumulate_data, "accumulate_data", 2048, NULL, 1, NULL);
+	xTaskCreate(clear_heartbeat, "clear_heartbeat", 512, NULL, 2, NULL);
 	// vTaskDelete(NULL);
 }
 
@@ -121,9 +134,14 @@ void setup() {
 
 void power_on_state () {
 	if (first_time_in_state) {
+		estop_enable.turn_on();
 		ign_wire.turn_off();
 		oxygen_valve.close();
 		fuel_valve.close();
+		valve1.turn_off();
+		valve2.turn_off();
+		valve3.turn_off();
+		valve4.turn_off();
 		green_light.turn_off();
 		yellow_light.turn_on();
 		red_light.turn_on();
@@ -137,10 +155,14 @@ void ksi_state () {
 		ign_wire.turn_off();
 		oxygen_valve.close();
 		fuel_valve.close();
+		valve1.turn_off();
+		valve2.turn_off();
+		valve3.turn_off();
+		valve4.turn_off();
 		green_light.turn_on();
 		yellow_light.turn_off();
 		red_light.turn_on();
-		// set_start_time();
+		set_start_time();
 		first_time_in_state = false;
 	}
 
@@ -168,6 +190,10 @@ void launch_state () {
 		ign_wire.turn_off();
 		oxygen_valve.close();
 		fuel_valve.close();
+		valve1.turn_off();
+		valve2.turn_off();
+		valve3.turn_off();
+		valve4.turn_off();
 		green_light.turn_on();
 		yellow_light.turn_on();
 		red_light.turn_off();
@@ -177,6 +203,7 @@ void launch_state () {
 	if ((comms & bit_sw_launch)) {
 		// TODO: add delay here oxygen -> 100ms -> fuel
 		oxygen_valve.open(); 
+		vTaskDelay(100 / portTICK_PERIOD_MS);
 		fuel_valve.open();
 	}
 	else {
@@ -191,13 +218,19 @@ void launch_state () {
 }
 
 void fail_state () {
-	green_light.turn_off();
-	yellow_light.turn_off();
-	red_light.turn_off();
+	estop_enable.turn_off();
 
+	green_light.toggle();
+	yellow_light.toggle();
+	red_light.toggle();
 	ign_wire.turn_off();
 	oxygen_valve.close();
 	fuel_valve.close();
+	valve1.turn_off();
+	valve2.turn_off();
+	valve3.turn_off();
+	valve4.turn_off();
+
 	return;
 }
 
@@ -206,10 +239,12 @@ void test_state() {
 }
 
 void loop() {
+	// Serial.printf("time: %d\n", millis());
 
-	// if (!(digitalRead(ESTOP_PIN))) {
+	// if (!(digitalRead(ESTOP_SENSE) || !(comms & bit_hearbeat)))) { //TODO: check the 2nd condition
 	// 	STATE = STATE_FAIL;
 	// }
+
 
 	switch (STATE) {
 		case STATE_POWERON:
@@ -243,7 +278,7 @@ void loop() {
 		case STATE_FAIL:
 			fail_state();
 
-			if (comms == 0xC0 && digitalRead(ESTOP_PIN)) {
+			if (comms == 0xC0 && digitalRead(ESTOP_SENSE)) {
 				STATE = STATE_POWERON;
 				first_time_in_state = true;
 			}

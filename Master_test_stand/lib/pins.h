@@ -22,7 +22,7 @@
 
 #define LOADCELL_PIN ADC2_CHANNEL_3 // GPIO 14
 // DIGITAL PINS
-#define ESTOP_PIN 34
+#define ESTOP_SENSE 34
 
 // OUTPUT PINS
 #define STOPLIGHT_GREEN_PIN 33
@@ -31,7 +31,12 @@
 #define OXYGEN_VALVE_PIN 1
 #define FUEL_VALUE_PIN 2
 #define IGN_PIN 18
-#define out1_pin 37
-#define out2_pin 36
+#define VALVE1_PIN 37
+#define VALVE2_PIN 36
+#define VALVE3_PIN 35
+#define VALVE4_PIN 19
+#define VALVE5_PIN 17
+#define ESTOP_ENABLE_PIN 14
+
 
 #endif
