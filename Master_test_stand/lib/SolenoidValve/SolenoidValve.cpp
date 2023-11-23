@@ -12,10 +12,9 @@
 SoleinoidValve::SoleinoidValve(int pin, uint8_t pullin_voltage, uint8_t holding_voltage) {
     _pin = pin;
     _IO_state = 0;
-    _pullin_voltage = constrain(pullin_voltage, 0, 100) / 100.0;
-    _holding_voltage = constrain(holding_voltage, 0, 100) / 100.0;
-    _previous_time_check = millis();
-    _is_on = false;
+    _pull_in_voltage = (uint8_t)(constrain(pullin_voltage, 0, 100) / 100.0 * 255);
+    _holding_voltage = (uint8_t)(constrain(holding_voltage, 0, 100) / 100.0 * 255);
+    _in_pull_in_state = false;
     pinMode(_pin, OUTPUT);
     analogWrite(_pin, 0);
 }
@@ -24,33 +23,32 @@ bool SoleinoidValve::get_state() {return _IO_state; }
 
 
 /**
- * @brief turn on the solenoid valve at pullin voltage for a certain amount of time then use holding voltage
+ * @brief turn on the solenoid valve
 */
-void SoleinoidValve::turn_on() {
-    if (_IO_state) return;    
-    if (!_is_on) {
-        _current_time = millis();
-        analogWrite(_pin, (int) (256 * _pullin_voltage));
-        if (_current_time - _previous_time_check > _pull_in_time_interval) {
-            // Serial.print("turned on");
-            // Serial.println(_pin);
-            _previous_time_check = _current_time;
-            analogWrite(_pin, (int) (256 * _holding_voltage));
-            _is_on = true;
-            _IO_state = 1;
-        }
-    }  
+void SoleinoidValve::open() {
+    if (_IO_state) return;
+    if (!_in_pull_in_state) {
+        analogWrite(_pin, _pull_in_voltage);
+        _in_pull_in_state = true;
+        _previous_time_check = millis();
+        return;
+    }
+    _current_time = millis();
+    if (_current_time - _previous_time_check < _pull_in_time_interval) return;
+    _previous_time_check = _current_time;
+    analogWrite(_pin, _holding_voltage);
+    _IO_state = 1;
     return;
 }
 
 
 /**
- * @brief Turn off (set to LOW) the output pin.
- */
-void SoleinoidValve::turn_off() {
+ * @brief turn off the solenoid valve
+*/
+void SoleinoidValve::close() {
     if (!_IO_state) return;
     _IO_state = 0;
-    _is_on = false;
+    _in_pull_in_state = false;
     analogWrite(_pin, 0);
     return;
 }
