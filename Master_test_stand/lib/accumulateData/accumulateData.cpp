@@ -41,6 +41,8 @@ const uint16_t resistorValue = 100;
 uint16_t minVolt_420 = (uint16_t)(minCurrent * resistorValue / 3.3 * 8192);
 uint16_t maxVolt_420 = (uint16_t)(maxCurrent * resistorValue / 3.3 * 8192);
 
+
+// TODO: get rid of useless variables
 int ducer5_value;
 int ducer6_value;
 int ducer7_value;
@@ -130,6 +132,7 @@ void accumulate_data(void* parameter) {
         buffer_index++;
         if (max_buffer_index == buffer_index) {
             buffer_index = 0;
+            // TODO: print correct packet on serial
             esp_now_send(receiverAddr, (uint8_t *) &outPacket, sizeof(outPacket));
         }
         vTaskDelay(1 / portTICK_PERIOD_MS);

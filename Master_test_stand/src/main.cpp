@@ -80,7 +80,6 @@ void setup() {
 	Serial.begin(115200);
 
 	// TODO: Setup Watchdog Timer
-	// set timer for 30 seconds
 
 
 	// Setup ADC
