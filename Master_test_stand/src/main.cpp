@@ -1,63 +1,41 @@
 #include <Arduino.h>
-#include <stdlib.h>
-#include <avr/io.h>
-#include "DigitalInput.h"
+#include <esp_now.h>
+#include <WiFi.h>
+#include <driver/adc.h>
+#include <accumulateData.h>
+#include <../pins.h>
 #include "DigitalOutput.h"
 #include "SolenoidValve.h"
-#include "Transducer.h"
-// #include "LoadCell.h"
-#include "DataLogger.h"
+#include <Filters.h>
+#include <Filters/Butterworth.hpp>
+#include <esp_task_wdt.h>
+#include <Ticker.h>
 
-
-// INPUT PINS
-// TODO: maybe slower to ensure reliable transmission
-#define BAUD_RATE 9600  // BAUDRATE for teensy communications
-// Analog IN
-#define TRANSDUCER1_PIN 14
-#define TRANSDUCER2_PIN 15
-#define TRANSDUCER3_PIN 16
-#define LOADCELL_PIN 17
-// Digital IN
-#define ESTOP_PIN 2
-
-// OUTPUT PINS
-#define STOPLIGHT_GREEN_PIN 4
-#define STOPLIGHT_YELLOW_PIN 5
-#define STOPLIGHT_RED_PIN 6
-#define OXYGEN_VALVE_PIN 7
-#define FUEL_VALUE_PIN 8
-#define IGN_PIN 9
-// PINS 10-13 are reserved for SPI communication
-
-// Define the states of the system
-enum State {
-  POWER_ON,
-  KSI,
-  LAUNCH,
-  FAIL, 
-  TEST
-};
-State STATE;
-bool first_time_in_state = true;
-
-// Instantiate every component in the system
-SerialData serial_data;
+// // OUTPUT PINS
 DigitalOutput red_light(STOPLIGHT_RED_PIN);  // lights are active low
 DigitalOutput yellow_light(STOPLIGHT_YELLOW_PIN);  // lights are active low
 DigitalOutput green_light(STOPLIGHT_GREEN_PIN);  // lights are active low
 DigitalOutput ign_wire(IGN_PIN);
-SoleinoidValve oxygen_valve(OXYGEN_VALVE_PIN, 100, 90);
-SoleinoidValve fuel_valve(FUEL_VALUE_PIN, 100, 90);
-DigitalInput estop(ESTOP_PIN);
-Transducer ducer1(TRANSDUCER1_PIN);
-Transducer ducer2(TRANSDUCER2_PIN);
-Transducer ducer3(TRANSDUCER3_PIN);
-Transducer ducer_arr[] = {ducer1, ducer2, ducer3};
+DigitalOutput valve1(VALVE1_PIN);
+DigitalOutput valve2(VALVE2_PIN);
+DigitalOutput valve3(VALVE3_PIN);
+DigitalOutput valve4(VALVE4_PIN);
+DigitalOutput estop_enable(ESTOP_ENABLE_PIN);
+SoleinoidValve oxygen_valve(OXYGEN_VALVE_PIN, 100, 60);
+SoleinoidValve fuel_valve(FUEL_VALUE_PIN, 100, 60);
 
+/* State Machine */
+enum SystemState {
+	STATE_POWERON,
+	STATE_KSI,
+	STATE_LAUNCH,
+	STATE_FAIL,
+	STATE_TEST
+};
+SystemState STATE;
+bool first_time_in_state = true;
 
-// b7 | b6 | b5 | b4 | b3 | b2 | b1 | b0
-// heartbeat | valid | sw_ign | sw_launch | sw_oxygen | sw_fuel | launch_btn | ksi 
-int comms_status;
+// /* Control Signals */
 uint8_t comms = 0x00;
 const u_int8_t bit_ksi = 1 << 0;
 const u_int8_t bit_launch_btn = 1 << 1;
@@ -66,25 +44,64 @@ const u_int8_t bit_sw_oxygen = 1 << 3;
 const u_int8_t bit_sw_launch = 1 << 4;
 const u_int8_t bit_sw_ign = 1 << 5;
 const u_int8_t bit_valid = 1 << 6;
-u_int8_t bit_heartbeat = 1 << 7;
+const u_int8_t bit_heartbeat = 1 << 7;
+
+/* ESP NOW */
+typedef struct {
+	uint8_t button_data;
+} incomingPacket_t;
+incomingPacket_t incomingPacket;
+
+esp_now_peer_info_t peerInfo;
+uint8_t broadcastAddress[] = {0x08, 0xd1, 0xf9, 0xef, 0x32, 0x84};  // MAC Address of the Control Box
+esp_err_t result;
+void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
+  	// Serial.print("\r\nLast Packet Send Status:\t");
+  	// Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+}
+void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
+  	memcpy(&incomingPacket, incomingData, sizeof(incomingPacket));
+  	comms = incomingPacket.button_data;
+	Serial.println(comms, BIN);
+}
+
+/* Watchdog Timer */
+
+
+// TODO: setup heartbeat timer
+void clear_heartbeat(void* parameter) {
+	for (;;) {
+		comms &= ~bit_heartbeat;
+		vTaskDelay(60000 / portTICK_PERIOD_MS); // 60 seconds
+	}
+}
 
 void setup() {
 	Serial.begin(115200);
-	Serial1.begin(BAUD_RATE);
-	serial_data.set_start_time();
-	
-	// while (1) {
-	// 	Serial.println("WAITING FOR VALID BIT");
-	// 	comms_status = Serial1.readBytes(&comms, 1);
-	// 	if (comms & bit_valid) {
-	// 		STATE = POWER_ON; 
-	//		serial_data.set_start_time();
-	// 		break;
-	// 	} 
-	// }
-	STATE = POWER_ON; 
 
-	// STATE = TEST;
+	// TODO: Setup Watchdog Timer
+
+
+	// Setup ADC
+	setup_ADC();
+	
+	// setup ESP_NOW
+	WiFi.mode(WIFI_STA);
+	esp_now_init();
+	esp_now_register_send_cb(OnDataSent);
+	memcpy(peerInfo.peer_addr, broadcastAddress, 6);
+  	peerInfo.channel = 0;  
+  	peerInfo.encrypt = false;
+	// TODO: wait for esp_now_add_peer to return ESP_OK
+	esp_now_add_peer(&peerInfo);
+	esp_now_register_recv_cb(OnDataRecv);
+
+	STATE = STATE_FAIL;
+	Serial.println("||||||||Setup complete||||||||");
+	set_start_time();
+	xTaskCreate(accumulate_data, "accumulate_data", 2048, NULL, 2, NULL);
+	xTaskCreate(clear_heartbeat, "clear_heartbeat", 512, NULL, 2, NULL);
+	// vTaskDelete(NULL);
 }
 
 /************************************************
@@ -116,64 +133,66 @@ void setup() {
 
 void power_on_state () {
 	if (first_time_in_state) {
-		Serial.println("POWERON state entry");
-		oxygen_valve.turn_off();
-		fuel_valve.turn_off();
+		estop_enable.turn_on();
+		ign_wire.turn_off();
+		oxygen_valve.close();
+		fuel_valve.close();
+		valve1.turn_off();
+		valve2.turn_off();
+		valve3.turn_off();
+		valve4.turn_off();
 		green_light.turn_off();
 		yellow_light.turn_on();
 		red_light.turn_on();
 		first_time_in_state = false;
 	}
-
-	serial_data.accummulate_data(ducer_arr);
-	serial_data.send_serial_data();
-
-	// serial_data.print_serial_data(); // TODO: uncomment this line to print data
 	return;
-};
-
+}
 
 void ksi_state () {
 	if (first_time_in_state) {
-		Serial.println("KSI state entry");
-
-		oxygen_valve.turn_off();
-		fuel_valve.turn_off();
+		ign_wire.turn_off();
+		oxygen_valve.close();
+		fuel_valve.close();
+		valve1.turn_off();
+		valve2.turn_off();
+		valve3.turn_off();
+		valve4.turn_off();
 		green_light.turn_on();
 		yellow_light.turn_off();
 		red_light.turn_on();
+		set_start_time();
 		first_time_in_state = false;
 	}
 
 	if ((comms & bit_sw_fuel) && (comms & bit_sw_oxygen)) {
-		oxygen_valve.turn_off();
-		fuel_valve.turn_off();
+		oxygen_valve.close();
+		fuel_valve.close();
 	}
 	else if ((comms & bit_sw_fuel) && !(comms & bit_sw_oxygen)) {
-		fuel_valve.turn_on();
-		oxygen_valve.turn_off();
+		fuel_valve.open();
+		oxygen_valve.close();
 	}
 	else if ((comms & bit_sw_oxygen) && !(comms & bit_sw_fuel)) {
-		oxygen_valve.turn_on();
-		fuel_valve.turn_off();
+		oxygen_valve.open();
+		fuel_valve.close();
 	} 
 	else {
-		oxygen_valve.turn_off();
-		fuel_valve.turn_off();
+		oxygen_valve.close();
+		fuel_valve.close();
 	}
-
-	serial_data.accummulate_data(ducer_arr);
-	serial_data.send_serial_data();
-
-	// serial_data.print_serial_data();  // TODO: uncomment this line to print data
 	return;
-};
+}
 
 void launch_state () {
 	if (first_time_in_state) {
-		Serial.println("LAUNCH state entry");
-		oxygen_valve.turn_off();
-		fuel_valve.turn_off();
+		ign_wire.turn_off();
+		oxygen_valve.close();
+		fuel_valve.close();
+		valve1.turn_off();
+		valve2.turn_off();
+		valve3.turn_off();
+		valve4.turn_off();
 		green_light.turn_on();
 		yellow_light.turn_on();
 		red_light.turn_off();
@@ -181,121 +200,93 @@ void launch_state () {
 	}
 	
 	if ((comms & bit_sw_launch)) {
-		oxygen_valve.turn_on(); 
-		fuel_valve.turn_on();
+		// TODO: add delay here oxygen -> 100ms -> fuel
+		oxygen_valve.open(); 
+		vTaskDelay(80 / portTICK_PERIOD_MS);
+		fuel_valve.open();
 	}
 	else {
-		oxygen_valve.turn_off();
-		fuel_valve.turn_off();
+		oxygen_valve.close();
+		fuel_valve.close();
 	}
 
 	if ((comms & bit_sw_ign)) ign_wire.turn_on();	
 	else ign_wire.turn_off();
 
-
-	serial_data.accummulate_data(ducer_arr);
-	serial_data.send_serial_data();
-	// serial_data.print_serial_data();
-	return;
-};
-
-void fail_state () {
-	green_light.toggle();
-	yellow_light.toggle();
-	red_light.toggle();
-	Serial.println("FAIL STATE");
-
-	delay(1000);
-
-	ign_wire.turn_off();
-	oxygen_valve.turn_off();
-	fuel_valve.turn_off();
-
-	serial_data.accummulate_data(ducer_arr);
-	// serial_data.print_serial_data();
-	return;
-};
-
-void test_state() {
-	oxygen_valve.turn_on();
-	fuel_valve.turn_on();
-
-	// Serial.println("TEST");
-
-	serial_data.accummulate_data(ducer_arr);
-	// serial_data.print_serial_data();
-	// serial_data.send_serial_data();
 	return;
 }
 
+void fail_state () {
+	estop_enable.turn_off();
+
+	green_light.toggle();
+	yellow_light.toggle();
+	red_light.toggle();
+	ign_wire.turn_off();
+	oxygen_valve.close();
+	fuel_valve.close();
+	valve1.turn_off();
+	valve2.turn_off();
+	valve3.turn_off();
+	valve4.turn_off();
+
+	return;
+}
+
+void test_state() {
+	return;
+}
 
 void loop() {
-	if (!estop.read()) {
-		STATE = FAIL;
-	}
 
-=======
-	if (Serial1.available()) {
-		comms_status = Serial1.readBytes(&comms, 1);
-		
-		// if (comms == -1) { STATE = FAIL; } // failed reading serial transmission
-		// bit_heartbeat ^= 1 << 7; // toggle heartbeat
-		// if (!(comms & bit_valid) || !(comms & bit_heartbeat)) { STATE = FAIL; }
-		// if (!(comms & bit_valid)) { STATE = FAIL; } // valid bit wasn't sent through
-		// Serial.print("from comms: ");
-		// Serial.println(comms, BIN);
-	}
+	// if (!(digitalRead(ESTOP_SENSE) || !(comms & bit_hearbeat)))) { //TODO: check the 2nd condition
+	// 	STATE = STATE_FAIL;
+	// }
 
-	
 
 	switch (STATE) {
-		case (POWER_ON): 
+		case STATE_POWERON:
 			power_on_state();
-			// Serial.println("POWERON state");
 
 			if (comms & bit_ksi) {
-				STATE = KSI;
+				STATE = STATE_KSI;
 				first_time_in_state = true;
 			}
 			break;
-
-		case (KSI): 
+		case STATE_KSI:
 			ksi_state();
-			// Serial.println("KSI state");
+
 			if (comms & bit_launch_btn) {
-				STATE = LAUNCH;
+				STATE = STATE_LAUNCH;
 				first_time_in_state = true;
 			}
 			if (!(comms & bit_ksi)) {
-				STATE = POWER_ON;
+				STATE = STATE_POWERON;
 				first_time_in_state = true;
 			}
 			break;
-
-		case (LAUNCH): 
+		case STATE_LAUNCH:
 			launch_state();
-			// Serial.println("LAUNCH state");
 
 			if (!(comms & bit_ksi)) {
-				STATE = POWER_ON;
+				STATE = STATE_POWERON;
 				first_time_in_state = true;
 			}
 			break;
-
-		case (FAIL): 
+		case STATE_FAIL:
 			fail_state();
-			// Serial.println("FAIL state");
 
-			if (!(comms & bit_ksi)) {
-				STATE = POWER_ON;
+			if (comms == 0xC0 && digitalRead(ESTOP_SENSE)) {
+				STATE = STATE_POWERON;
 				first_time_in_state = true;
 			}
 			break;
-
-		case (TEST):
+		case STATE_TEST:
 			test_state();
-
+			break;
 		default:
-			STATE = POWER_ON;
+			STATE = STATE_POWERON;
+			break;
 	}
+	vTaskDelay(30 / portTICK_PERIOD_MS);
 }

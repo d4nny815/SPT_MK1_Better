@@ -25,6 +25,8 @@ bool DigitalOutput::get_state() {return _IO_state; }
 void DigitalOutput::turn_on() {
     if (_IO_state) return;
     _IO_state = 1;
+    // Serial.print("turned on: ");
+    // Serial.println(_pin);
     digitalWrite(_pin, HIGH);
     return;
 }

@@ -12,12 +12,20 @@ DigitalInput::DigitalInput(int pin) {
     pinMode(_pin, INPUT);
 }
 
-// TODO: better implementation of debouncing
 /**
- * @brief Reads the value of the digital input pin
+ * @brief Reads the digital input
+ * @return The state of the digital input
+ * @note This function also debounces the input
 */
 bool DigitalInput::read() {
-    bool initial_read = digitalRead(_pin);
-    delayMicroseconds(100); // terrible way to debounce
-    return digitalRead(_pin) && (digitalRead(_pin) == initial_read);
+    _btn_state = digitalRead(_pin);
+    _cur_time = micros();
+
+    if (_cur_time - _prev_time_check >= _debounce_time_us) {
+        _prev_time_check = _cur_time;
+        _last_btn_state = _btn_state;
+        return _btn_state;
+    }
+
+    return _last_btn_state;
 }
