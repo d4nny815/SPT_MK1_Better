@@ -167,7 +167,8 @@ void launch_state () {
 	
 	if ((comms & bit_sw_launch)) {
 		oxygen_valve.turn_on();
-		delay(100); // shitty blocking delay but it'll do
+		// * comment this to remove it
+		delay(100); // shitty blocking delay but it'll do 
 		fuel_valve.turn_on();
 	}
 	else {
