@@ -99,7 +99,7 @@ void setup() {
 	STATE = STATE_FAIL;
 	Serial.println("||||||||Setup complete||||||||");
 	set_start_time();
-	xTaskCreate(accumulate_data, "accumulate_data", 2048, NULL, 1, NULL);
+	xTaskCreate(accumulate_data, "accumulate_data", 2048, NULL, 2, NULL);
 	xTaskCreate(clear_heartbeat, "clear_heartbeat", 512, NULL, 2, NULL);
 	// vTaskDelete(NULL);
 }
@@ -202,7 +202,7 @@ void launch_state () {
 	if ((comms & bit_sw_launch)) {
 		// TODO: add delay here oxygen -> 100ms -> fuel
 		oxygen_valve.open(); 
-		vTaskDelay(100 / portTICK_PERIOD_MS);
+		vTaskDelay(80 / portTICK_PERIOD_MS);
 		fuel_valve.open();
 	}
 	else {
@@ -238,7 +238,6 @@ void test_state() {
 }
 
 void loop() {
-	// Serial.printf("time: %d\n", millis());
 
 	// if (!(digitalRead(ESTOP_SENSE) || !(comms & bit_hearbeat)))) { //TODO: check the 2nd condition
 	// 	STATE = STATE_FAIL;

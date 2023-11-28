@@ -88,7 +88,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     //   Serial.println(len);
     
     for (buffer_index = 0; buffer_index < buffer_size; buffer_index++) { 
-        Serial.printf("%lu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu\n",
+        Serial.printf("%lu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu\n",
                         incomingPacket[buffer_index].time_data, incomingPacket[buffer_index].transducer1_data,
                         incomingPacket[buffer_index].transducer2_data, incomingPacket[buffer_index].transducer3_data,
                         incomingPacket[buffer_index].transducer4_data, incomingPacket[buffer_index].transducer5_data,
