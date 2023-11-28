@@ -37,7 +37,6 @@ void SoleinoidValve::open() {
     if (_current_time - _previous_time_check < _pull_in_time_interval) return;
     _previous_time_check = _current_time;
     analogWrite(_pin, _holding_voltage);
-    // Serial.printf("opened on pin %d\n", _pin);
     _IO_state = 1;
     return;
 }
