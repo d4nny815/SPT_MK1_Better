@@ -6,12 +6,7 @@
 #include <../pins.h>
 #include "DigitalOutput.h"
 #include "SolenoidValve.h"
-#include <Filters.h>
-#include <Filters/Butterworth.hpp>
-#include <esp_task_wdt.h>
-#include <Ticker.h>
 
-// // OUTPUT PINS
 DigitalOutput red_light(STOPLIGHT_RED_PIN);  // lights are active low
 DigitalOutput yellow_light(STOPLIGHT_YELLOW_PIN);  // lights are active low
 DigitalOutput green_light(STOPLIGHT_GREEN_PIN);  // lights are active low
@@ -56,8 +51,8 @@ esp_now_peer_info_t peerInfo;
 uint8_t broadcastAddress[] = {0x08, 0xd1, 0xf9, 0xef, 0x32, 0x84};  // MAC Address of the Control Box
 esp_err_t result;
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
-  	// Serial.print("\r\nLast Packet Send Status:\t");
-  	// Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+  	Serial.print("\r\nLast Packet Send Status:\t");
+  	Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
 }
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   	memcpy(&incomingPacket, incomingData, sizeof(incomingPacket));
@@ -77,7 +72,7 @@ void clear_heartbeat(void* parameter) {
 }
 
 void setup() {
-	Serial.begin(115200);
+	Serial.begin(230400);
 
 	// TODO: Setup Watchdog Timer
 
@@ -92,15 +87,14 @@ void setup() {
 	memcpy(peerInfo.peer_addr, broadcastAddress, 6);
   	peerInfo.channel = 0;  
   	peerInfo.encrypt = false;
-	// TODO: wait for esp_now_add_peer to return ESP_OK
 	esp_now_add_peer(&peerInfo);
 	esp_now_register_recv_cb(OnDataRecv);
 
 	STATE = STATE_FAIL;
 	Serial.println("||||||||Setup complete||||||||");
 	set_start_time();
-	xTaskCreate(accumulate_data, "accumulate_data", 2048, NULL, 2, NULL);
-	xTaskCreate(clear_heartbeat, "clear_heartbeat", 512, NULL, 2, NULL);
+	// xTaskCreate(accumulate_data, "accumulate_data", 2048, NULL, 2, NULL);
+	// xTaskCreate(clear_heartbeat, "clear_heartbeat", 512, NULL, 2, NULL);
 	// vTaskDelete(NULL);
 }
 
@@ -133,6 +127,7 @@ void setup() {
 
 void power_on_state () {
 	if (first_time_in_state) {
+		Serial.printf("POWERON entry\n");
 		estop_enable.turn_on();
 		ign_wire.turn_off();
 		oxygen_valve.close();
@@ -151,6 +146,7 @@ void power_on_state () {
 
 void ksi_state () {
 	if (first_time_in_state) {
+		Serial.printf("KSI entry\n");
 		ign_wire.turn_off();
 		oxygen_valve.close();
 		fuel_valve.close();
@@ -186,6 +182,7 @@ void ksi_state () {
 
 void launch_state () {
 	if (first_time_in_state) {
+		Serial.printf("LAUNCH entry\n");
 		ign_wire.turn_off();
 		oxygen_valve.close();
 		fuel_valve.close();
@@ -217,6 +214,7 @@ void launch_state () {
 }
 
 void fail_state () {
+	Serial.printf("In fail state\n");
 	estop_enable.turn_off();
 
 	green_light.toggle();
@@ -242,6 +240,11 @@ void loop() {
 	// if (!(digitalRead(ESTOP_SENSE) || !(comms & bit_hearbeat)))) { //TODO: check the 2nd condition
 	// 	STATE = STATE_FAIL;
 	// }
+
+	if (Serial.available()) {
+		comms = Serial.read();
+		Serial.println(comms, BIN);
+	}
 
 
 	switch (STATE) {
@@ -276,7 +279,8 @@ void loop() {
 		case STATE_FAIL:
 			fail_state();
 
-			if (comms == 0xC0 && digitalRead(ESTOP_SENSE)) {
+			// if (comms == 0xC0 && digitalRead(ESTOP_SENSE)) {
+			if (comms == 0xC0) {
 				STATE = STATE_POWERON;
 				first_time_in_state = true;
 			}
