@@ -157,7 +157,7 @@ void set_start_time() {
 //     }
 // }
 
-const int delay_rate = 2 / portTICK_PERIOD_MS;
+const int delay_rate = 5 / portTICK_PERIOD_MS;
 void accumulate_data(void* parameter) { 
     for (;;) {
         for (buffer_index=0; buffer_index<6; buffer_index++) {

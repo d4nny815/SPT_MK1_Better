@@ -128,7 +128,6 @@ void setup() {
 void power_on_state () {
 	if (first_time_in_state) {
 		Serial.printf("POWERON entry\n");
-		estop_enable.turn_on();
 		ign_wire.turn_off();
 		oxygen_valve.close();
 		fuel_valve.close();
@@ -147,6 +146,7 @@ void power_on_state () {
 void ksi_state () {
 	if (first_time_in_state) {
 		Serial.printf("KSI entry\n");
+		estop_enable.turn_on();
 		ign_wire.turn_off();
 		oxygen_valve.close();
 		fuel_valve.close();
@@ -237,7 +237,7 @@ void test_state() {
 
 void loop() {
 
-	// if (!(digitalRead(ESTOP_SENSE) || !(comms & bit_hearbeat)))) { //TODO: check the 2nd condition
+	// if (!(digitalRead(ESTOP_SENSE))) { //TODO: check the 2nd condition
 	// 	STATE = STATE_FAIL;
 	// }
 
@@ -279,6 +279,7 @@ void loop() {
 		case STATE_FAIL:
 			fail_state();
 
+			// Serial.printf("ESTOP SENSE: %d\n", digitalRead(14));
 			// if (comms == 0xC0 && digitalRead(ESTOP_SENSE)) {
 			if (comms == 0xC0) {
 				STATE = STATE_POWERON;
