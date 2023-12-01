@@ -37,7 +37,8 @@ const double f_n = 2 * f_c / f_s;
 
 const float minCurrent = 4e-3;
 const float maxCurrent = 20e-3;
-const uint16_t resistorValue = 100;
+const uint16_t resistorValue = 150;
+const float correcting_factor = .85;
 uint16_t minVolt_420 = (uint16_t)(minCurrent * resistorValue / 3.3 * 8192);
 uint16_t maxVolt_420 = (uint16_t)(maxCurrent * resistorValue / 3.3 * 8192);
 
@@ -157,7 +158,7 @@ void set_start_time() {
 //     }
 // }
 
-const int delay_rate = 5 / portTICK_PERIOD_MS;
+const int delay_rate = 50 / portTICK_PERIOD_MS; // TODO: change back to 5ms
 void accumulate_data(void* parameter) { 
     for (;;) {
         for (buffer_index=0; buffer_index<6; buffer_index++) {
@@ -186,7 +187,8 @@ void accumulate_data(void* parameter) {
 
             // get loadcell value
             adc2_get_raw(LOADCELL_PIN, ADC_WIDTH_BIT_13, &loadcell_value);
-            outPacket[buffer_index].loadcell = map(loadcell_filter(loadcell_value), minVolt_420, maxVolt_420, 0, 1000);
+            outPacket[buffer_index].loadcell = map(loadcell_filter(constrain(loadcell_value, minVolt_420, maxVolt_420)), minVolt_420, maxVolt_420, 0, 110);
+            Serial.printf("raw: %d, filtered: %d\n", loadcell_value, outPacket[buffer_index].loadcell);
 
             // Serial.printf("%lu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu\n",
             //     outPacket[buffer_index].time,

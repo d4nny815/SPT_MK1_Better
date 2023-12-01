@@ -42,7 +42,7 @@ u_int8_t bit_heartbeat = 1 << 7;
 
 unsigned long cur_time;
 unsigned long prev_time_sent = millis();
-unsigned long transmit_time = 500;
+unsigned long transmit_time = 200;
 
 esp_now_peer_info_t peerInfo;
 uint8_t broadcastAddress[] = {0x58, 0xcf, 0x79, 0xb3, 0xd8, 0x9c}; // MAC Address of the MK1
