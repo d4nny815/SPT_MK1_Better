@@ -95,7 +95,6 @@ void setup() {
 	Serial.println("||||||||Setup complete||||||||");
 	set_start_time();
 	xTaskCreate(accumulate_data, "accumulate_data", 2048, NULL, 2, NULL);
-	// xTaskCreate(clear_heartbeat, "clear_heartbeat", 512, NULL, 1, NULL);
 	// vTaskDelete(NULL); // TODO: delete setup task
 }
 
@@ -230,20 +229,16 @@ void fail_state () {
 		valve3.turn_off();
 		valve4.turn_off();
 
-		if(!comms){
+		if(!comms) {
 			green_light.turn_on();
 			yellow_light.turn_off();
 			red_light.turn_on();
-		} else{
+		} else {
 			green_light.turn_on();
 			yellow_light.turn_on();
 			red_light.turn_off();
 		}
 	}
-	// TODO: HW ESTOP: Red light out of sync
-
-
-	// TODO: HB lost: Yellow light out of sync
 
 	
 	green_light.toggle();

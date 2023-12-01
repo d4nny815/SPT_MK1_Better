@@ -1,4 +1,4 @@
-Port = usbserial-110
+Port = COM13
 BaudRate = 230400
 DataBits = 8
 Parity = N
@@ -60,7 +60,7 @@ CaptureFileStaysOpen = true
 CaptureAutostart = false
 CaptureAutoAppend = false
 CaptureAutoFilename = 
-CapturePath = /Applications
+CapturePath = C:\Users\D4nny\Downloads\CoolTermWin64Bit\CoolTermWin64Bit\
 TerminateSendString = false
 TerminationString = 0D 0A
 TXCharDelayEnabled = false
@@ -76,13 +76,13 @@ WaitForRemoteEcho = false
 RemoteEchoTimeout = 1000000
 XmitWaitEnable = false
 SendTextSoundEnable = false
-TextFont = Monaco
+TextFont = Courier
 TextFontSize = 0
 InputFontSize = 0
 TextFontColor = &h00000000
 CondenseLines = false
 TextBackgroundColor = &h00FFFFFF
-HexFont = Monaco
+HexFont = Courier
 HexFontSize = 0
 ShowToolbar = true
 ShowToolbarButtonLabels = true
@@ -127,4 +127,4 @@ ChartTraceProperties = 13:Label=Thermistor 5 (F)	Color=&h00FF00FF	Style=0	Width=
 ChartTraceProperties = 14:Label=Thermistor 6 (F)	Color=&h00DDDD00	Style=0	Width=1	MStyle=8	Scale=0	Visible=False
 ChartTraceProperties = 15:Label=Thrust (lbs)	Color=&h00942192	Style=0	Width=1	MStyle=8	Scale=0	Visible=True
 KeepOnTop = false
-WindowPosition = -3,105,1440,734
+WindowPosition = -1580,223,1440,734
