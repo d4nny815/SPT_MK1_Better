@@ -71,6 +71,7 @@ typedef struct {
 	uint8_t button_data;
 } outgoingPacket_t;
 
+bool newData;
 const int buffer_size = 6;
 int buffer_index;
 incomingPacket_t incomingPacket[buffer_size];
@@ -78,27 +79,35 @@ outgoingPacket_t outgoingPacket;
 String success;
 
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
-  Serial.print("\r\nLast Packet Send Status:\t");
-  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+//   Serial.print("\r\nLast Packet Send Status:\t");
+//   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
 }
 
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
-      memcpy(&incomingPacket, incomingData, sizeof(incomingPacket));
+    memcpy(&incomingPacket, incomingData, sizeof(incomingPacket));
+    newData = true;
+    Serial.flush();
     //   Serial.print("Bytes received: ");
     //   Serial.println(len);
     
-    for (buffer_index = 0; buffer_index < buffer_size; buffer_index++) { 
-        Serial.printf("%lu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu\n",
-                        incomingPacket[buffer_index].time_data, incomingPacket[buffer_index].transducer1_data,
-                        incomingPacket[buffer_index].transducer2_data, incomingPacket[buffer_index].transducer3_data,
-                        incomingPacket[buffer_index].transducer4_data, incomingPacket[buffer_index].transducer5_data,
-                        incomingPacket[buffer_index].transducer6_data, incomingPacket[buffer_index].transducer7_data,
-                        incomingPacket[buffer_index].transducer8_data, incomingPacket[buffer_index].thermoresistor1_data,
-                        incomingPacket[buffer_index].thermoresistor2_data, incomingPacket[buffer_index].thermoresistor3_data,
-                        incomingPacket[buffer_index].thermoresistor4_data, incomingPacket[buffer_index].thermoresistor5_data,
-                        incomingPacket[buffer_index].thermoresistor6_data, incomingPacket[buffer_index].loadcell_data 
-        );
-    }
+    // for (buffer_index = 0; buffer_index < buffer_size; buffer_index++) { 
+    //     // Serial.printf("%lu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu\n",
+    //     //                 incomingPacket[buffer_index].time_data, incomingPacket[buffer_index].transducer1_data,
+    //     //                 incomingPacket[buffer_index].transducer2_data, incomingPacket[buffer_index].transducer3_data,
+    //     //                 incomingPacket[buffer_index].transducer4_data, incomingPacket[buffer_index].transducer5_data,
+    //     //                 incomingPacket[buffer_index].transducer6_data, incomingPacket[buffer_index].transducer7_data,
+    //     //                 incomingPacket[buffer_index].transducer8_data, incomingPacket[buffer_index].thermoresistor1_data,
+    //     //                 incomingPacket[buffer_index].thermoresistor2_data, incomingPacket[buffer_index].thermoresistor3_data,
+    //     //                 incomingPacket[buffer_index].thermoresistor4_data, incomingPacket[buffer_index].thermoresistor5_data,
+    //     //                 incomingPacket[buffer_index].thermoresistor6_data, incomingPacket[buffer_index].loadcell_data 
+    //     // );
+    //     Serial.printf("%lu,%hu,%hu,%hu,0,0,0,0,0,0,0,0,0,0,%hu\n", 
+    //                     incomingPacket[buffer_index].time_data, 
+    //                     incomingPacket[buffer_index].transducer1_data,
+    //                     incomingPacket[buffer_index].transducer2_data, 
+    //                     incomingPacket[buffer_index].transducer3_data,
+    //                     incomingPacket[buffer_index].loadcell_data);
+    // }
     return;
 }
 
@@ -129,7 +138,27 @@ void setup() {
 //
 //////////////////////////////////////////////////////////////////////////////////
 
+char string_buffer[41];
+
 void loop() {
+    if (newData) {
+
+        for (buffer_index = 0; buffer_index < buffer_size; buffer_index++) { 
+        Serial.printf("%lu,%hu,%hu,%hu,%hu,% hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu\n",
+                        incomingPacket[buffer_index].time_data, incomingPacket[buffer_index].transducer1_data,
+                        incomingPacket[buffer_index].transducer2_data, incomingPacket[buffer_index].transducer3_data,
+                        incomingPacket[buffer_index].transducer4_data, incomingPacket[buffer_index].transducer5_data,
+                        incomingPacket[buffer_index].transducer6_data, incomingPacket[buffer_index].transducer7_data,
+                        incomingPacket[buffer_index].transducer8_data, incomingPacket[buffer_index].thermoresistor1_data,
+                        incomingPacket[buffer_index].thermoresistor2_data, incomingPacket[buffer_index].thermoresistor3_data,
+                        incomingPacket[buffer_index].thermoresistor4_data, incomingPacket[buffer_index].thermoresistor5_data,
+                        incomingPacket[buffer_index].thermoresistor6_data, incomingPacket[buffer_index].loadcell_data 
+        );
+        newData = false;
+        }
+    }
+
+
   	// read the KSI bit
 	if (ksi_sw.read()) transmit_data = transmit_data | bit_ksi;
 	else transmit_data = transmit_data & (bit_ksi ^ 0xff);
@@ -164,12 +193,12 @@ void loop() {
         prev_time_sent = cur_time;
         outgoingPacket.button_data = transmit_data;
         result = esp_now_send(broadcastAddress, (uint8_t *) &outgoingPacket, sizeof(outgoingPacket));
-        Serial.println(transmit_data, BIN);
-        if (result == ESP_OK) {
-            Serial.println("Sent with success");
-        }
-        else {
-            Serial.println("Error sending the data");
-        }
+        // Serial.println(transmit_data, BIN);
+        // if (result == ESP_OK) {
+        //     Serial.println("Sent with success");
+        // }
+        // else {
+        //     Serial.println("Error sending the data");
+        // }
     }
 }

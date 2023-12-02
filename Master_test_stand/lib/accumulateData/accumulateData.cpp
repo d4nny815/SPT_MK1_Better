@@ -165,7 +165,7 @@ void set_start_time() {
 //     }
 // }
 
-const int delay_rate = 2 / portTICK_PERIOD_MS; // TODO: change back to 5ms
+const int delay_rate = 1 / portTICK_PERIOD_MS; // TODO: change back to 5ms
 void accumulate_data(void* parameter) { 
     for (;;) {
         outPacket[buffer_index].time = millis() - start_time;
@@ -204,23 +204,23 @@ void accumulate_data(void* parameter) {
         adc2_get_raw(LOADCELL_PIN, ADC_WIDTH_BIT_13, &loadcell_value);
         loadcell_value = constrain(loadcell_value, minVolt_420, maxVolt_420);
         outPacket[buffer_index].loadcell = map(loadcell_filter(loadcell_value), minVolt_420, maxVolt_420, MIN_THRUST_LBS, MAX_THRUST_LBS);
-        // Serial.printf("%lu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu\n",
-        //     outPacket[buffer_index].time,
-        //     outPacket[buffer_index].ducer1,
-        //     outPacket[buffer_index].ducer2,
-        //     outPacket[buffer_index].ducer3,
-        //     outPacket[buffer_index].ducer4,
-        //     outPacket[buffer_index].ducer5,
-        //     outPacket[buffer_index].ducer6,
-        //     outPacket[buffer_index].ducer7,
-        //     outPacket[buffer_index].ducer8,
-        //     outPacket[buffer_index].therm1,
-        //     outPacket[buffer_index].therm2,
-        //     outPacket[buffer_index].therm3,
-        //     outPacket[buffer_index].therm4,
-        //     outPacket[buffer_index].therm5,
-        //     outPacket[buffer_index].therm6,
-        //     outPacket[buffer_index].loadcell);
+        Serial.printf("%lu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu\n",
+            outPacket[buffer_index].time,
+            outPacket[buffer_index].ducer1,
+            outPacket[buffer_index].ducer2,
+            outPacket[buffer_index].ducer3,
+            outPacket[buffer_index].ducer4,
+            outPacket[buffer_index].ducer5,
+            outPacket[buffer_index].ducer6,
+            outPacket[buffer_index].ducer7,
+            outPacket[buffer_index].ducer8,
+            outPacket[buffer_index].therm1,
+            outPacket[buffer_index].therm2,
+            outPacket[buffer_index].therm3,
+            outPacket[buffer_index].therm4,
+            outPacket[buffer_index].therm5,
+            outPacket[buffer_index].therm6,
+            outPacket[buffer_index].loadcell);
         
 
         buffer_index++;    
