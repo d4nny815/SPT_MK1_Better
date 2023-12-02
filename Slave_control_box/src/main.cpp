@@ -29,7 +29,6 @@ DigitalInput  ksi_sw(SW_KSI);
 
 // b7 | b6 | b5 | b4 | b3 | b2 | b1 | b0
 // heartbeat | valid | sw_ign | sw_launch | sw_oxygen | sw_fuel | launch_btn | ksi
-uint8_t prev_transmit_data = 0x00; 
 uint8_t transmit_data = 0x00;
 const u_int8_t bit_ksi = 1 <<6;
 const u_int8_t bit_launch_btn = 1 << 1;
@@ -71,9 +70,9 @@ typedef struct {
 	uint8_t button_data;
 } outgoingPacket_t;
 
-const int buffer_size = 6;
+#define MAX_BUFFER_IDX 6
 int buffer_index;
-incomingPacket_t incomingPacket[buffer_size];
+incomingPacket_t incomingPacket[MAX_BUFFER_IDX];
 outgoingPacket_t outgoingPacket;
 String success;
 
@@ -83,12 +82,9 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 }
 
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
-      memcpy(&incomingPacket, incomingData, sizeof(incomingPacket));
-    //   Serial.print("Bytes received: ");
-    //   Serial.println(len);
-    
-    for (buffer_index = 0; buffer_index < buffer_size; buffer_index++) { 
-        Serial.printf("%lu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu\n",
+      memcpy(&incomingPacket, incomingData, sizeof(incomingPacket));    
+        for (buffer_index = 0; buffer_index < MAX_BUFFER_IDX; buffer_index++) { 
+            Serial.printf("%lu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu\n",
                         incomingPacket[buffer_index].time_data, incomingPacket[buffer_index].transducer1_data,
                         incomingPacket[buffer_index].transducer2_data, incomingPacket[buffer_index].transducer3_data,
                         incomingPacket[buffer_index].transducer4_data, incomingPacket[buffer_index].transducer5_data,
@@ -108,7 +104,6 @@ void setup() {
   	transmit_data |= bit_heartbeat;
 
 	// TODO: WATCHDOG SETUP
-	
 
 	// ESP-NOW SETUP
 	WiFi.mode(WIFI_STA);
@@ -163,13 +158,15 @@ void loop() {
     if (cur_time - prev_time_sent >= transmit_time) {
         prev_time_sent = cur_time;
         outgoingPacket.button_data = transmit_data;
-        result = esp_now_send(broadcastAddress, (uint8_t *) &outgoingPacket, sizeof(outgoingPacket));
+        // result = esp_now_send(broadcastAddress, (uint8_t *) &outgoingPacket, sizeof(outgoingPacket));
+        esp_now_send(broadcastAddress, (uint8_t *) &outgoingPacket, sizeof(outgoingPacket));
+        
         //Serial.println(transmit_data, BIN);
-        if (result == ESP_OK) {
-            //Serial.println("Sent with success");
-        }
-        else {
-            Serial.println("Error sending the data");
-        }
+        // if (result == ESP_OK) {
+        //     //Serial.println("Sent with success");
+        // }
+        // else {
+        //     Serial.println("Error sending the data");
+        // }
     }
 }

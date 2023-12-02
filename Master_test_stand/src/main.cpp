@@ -16,10 +16,11 @@ DigitalOutput valve2(VALVE2_PIN);
 DigitalOutput valve3(VALVE3_PIN);
 DigitalOutput valve4(VALVE4_PIN);
 DigitalOutput estop_enable(ESTOP_ENABLE_PIN);
-SoleinoidValve oxygen_valve(OXYGEN_VALVE_PIN, 100, 60);
-SoleinoidValve fuel_valve(FUEL_VALUE_PIN, 100, 60);
+SoleinoidValve oxygen_valve(OXYGEN_VALVE_PIN, 55, 30);
+SoleinoidValve fuel_valve(FUEL_VALUE_PIN, 55, 30);
 
-/* State Machine */
+
+// * State Machine
 enum SystemState {
 	STATE_POWERON,
 	STATE_KSI,
@@ -30,49 +31,46 @@ enum SystemState {
 SystemState STATE;
 bool first_time_in_state = true;
 
-// /* Control Signals */
+// * Control Signals
 uint8_t comms = 0x00;
-const u_int8_t bit_ksi = 1 << 0;
+const u_int8_t bit_ksi = 1 << 6;
 const u_int8_t bit_launch_btn = 1 << 1;
 const u_int8_t bit_sw_fuel = 1 << 2;
 const u_int8_t bit_sw_oxygen = 1 << 3;
 const u_int8_t bit_sw_launch = 1 << 4;
 const u_int8_t bit_sw_ign = 1 << 5;
-const u_int8_t bit_valid = 1 << 6;
+// const u_int8_t bit_valid = 1 << 6;
 const u_int8_t bit_heartbeat = 1 << 7;
 
-/* ESP NOW */
+uint8_t heartbeart_counter = 0;
+#define MAX_HEARTBEAT_CNT 10
+
+// * ESP-NOW
 typedef struct {
 	uint8_t button_data;
 } incomingPacket_t;
 incomingPacket_t incomingPacket;
 
 esp_now_peer_info_t peerInfo;
-uint8_t broadcastAddress[] = {0x08, 0xd1, 0xf9, 0xef, 0x32, 0x84};  // MAC Address of the Control Box
+uint8_t broadcastAddress[] = {0x40, 0x22, 0xd8, 0x3c, 0x37, 0xfc}; // MAC Address of the MK1
+
 esp_err_t result;
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
-  	Serial.print("\r\nLast Packet Send Status:\t");
-  	Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+  	// Serial.print("\r\nLast Packet Send Status:\t");
+  	// Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
 }
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   	memcpy(&incomingPacket, incomingData, sizeof(incomingPacket));
   	comms = incomingPacket.button_data;
+	if (comms & bit_heartbeat) heartbeart_counter = 0; // clear heartbeat counter
 	Serial.println(comms, BIN);
 }
 
-/* Watchdog Timer */
 
-
-// TODO: setup heartbeat timer
-void clear_heartbeat(void* parameter) {
-	for (;;) {
-		comms &= ~bit_heartbeat;
-		vTaskDelay(60000 / portTICK_PERIOD_MS); // 60 seconds
-	}
-}
 
 void setup() {
 	Serial.begin(230400);
+
 
 	// TODO: Setup Watchdog Timer
 
@@ -93,9 +91,8 @@ void setup() {
 	STATE = STATE_FAIL;
 	Serial.println("||||||||Setup complete||||||||");
 	set_start_time();
-	// xTaskCreate(accumulate_data, "accumulate_data", 2048, NULL, 2, NULL);
-	// xTaskCreate(clear_heartbeat, "clear_heartbeat", 512, NULL, 2, NULL);
-	// vTaskDelete(NULL);
+	xTaskCreate(accumulate_data, "accumulate_data", 2048, NULL, 1, NULL);
+	// vTaskDelete(NULL); // TODO: delete setup task
 }
 
 /************************************************
@@ -128,6 +125,7 @@ void setup() {
 void power_on_state () {
 	if (first_time_in_state) {
 		Serial.printf("POWERON entry\n");
+		estop_enable.turn_off();
 		ign_wire.turn_off();
 		oxygen_valve.close();
 		fuel_valve.close();
@@ -180,6 +178,7 @@ void ksi_state () {
 	return;
 }
 
+bool ign_sparked = false;
 void launch_state () {
 	if (first_time_in_state) {
 		Serial.printf("LAUNCH entry\n");
@@ -199,7 +198,7 @@ void launch_state () {
 	if ((comms & bit_sw_launch)) {
 		// TODO: add delay here oxygen -> 100ms -> fuel
 		oxygen_valve.open(); 
-		vTaskDelay(80 / portTICK_PERIOD_MS);
+		vTaskDelay(40 / portTICK_PERIOD_MS);
 		fuel_valve.open();
 	}
 	else {
@@ -207,27 +206,43 @@ void launch_state () {
 		fuel_valve.close();
 	}
 
-	if ((comms & bit_sw_ign)) ign_wire.turn_on();	
-	else ign_wire.turn_off();
+	if ((comms & bit_sw_ign)) {
+		ign_wire.toggle();
+
+	} 
+	else  {
+		ign_wire.turn_off();
+	}
 
 	return;
 }
 
 void fail_state () {
-	Serial.printf("In fail state\n");
-	estop_enable.turn_off();
+	if (first_time_in_state) {
+		estop_enable.turn_off();
+		ign_wire.turn_off();
+		oxygen_valve.close();
+		fuel_valve.close();
+		valve1.turn_off();
+		valve2.turn_off();
+		valve3.turn_off();
+		valve4.turn_off();
 
+		if(!comms) {
+			green_light.turn_on();
+			yellow_light.turn_off();
+			red_light.turn_on();
+		} else {
+			green_light.turn_on();
+			yellow_light.turn_on();
+			red_light.turn_off();
+		}
+	}
+
+	
 	green_light.toggle();
 	yellow_light.toggle();
 	red_light.toggle();
-	ign_wire.turn_off();
-	oxygen_valve.close();
-	fuel_valve.close();
-	valve1.turn_off();
-	valve2.turn_off();
-	valve3.turn_off();
-	valve4.turn_off();
-
 	return;
 }
 
@@ -236,16 +251,23 @@ void test_state() {
 }
 
 void loop() {
-
-	// if (!(digitalRead(ESTOP_SENSE))) { //TODO: check the 2nd condition
-	// 	STATE = STATE_FAIL;
-	// }
-
-	if (Serial.available()) {
-		comms = Serial.read();
-		Serial.println(comms, BIN);
+	pinMode(ESTOP_SENSE, INPUT);
+	heartbeart_counter++;
+	if (heartbeart_counter == MAX_HEARTBEAT_CNT) {
+		comms = 0;
+		first_time_in_state = true;
+		STATE = STATE_FAIL;
 	}
 
+	if (!(digitalRead(ESTOP_SENSE))) {
+		first_time_in_state = true;
+		STATE = STATE_FAIL;
+	}
+
+	// if (Serial.available()) { // Commands without control box
+	// 	comms = Serial.read();
+	// 	Serial.println(comms, BIN);
+	// }
 
 	switch (STATE) {
 		case STATE_POWERON:
@@ -279,18 +301,17 @@ void loop() {
 		case STATE_FAIL:
 			fail_state();
 
-			// Serial.printf("ESTOP SENSE: %d\n", digitalRead(14));
-			// if (comms == 0xC0 && digitalRead(ESTOP_SENSE)) {
-			if (comms == 0xC0) {
+			if (comms == 0x80 && digitalRead(ESTOP_SENSE)) {
 				STATE = STATE_POWERON;
 				first_time_in_state = true;
 			}
 			break;
-		case STATE_TEST:
+		// Testing new features
+		case STATE_TEST: 
 			test_state();
 			break;
 		default:
-			STATE = STATE_POWERON;
+			STATE = STATE_FAIL;
 			break;
 	}
 	vTaskDelay(30 / portTICK_PERIOD_MS);
