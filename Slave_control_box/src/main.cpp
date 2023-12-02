@@ -164,6 +164,7 @@ void loop() {
         prev_time_sent = cur_time;
         outgoingPacket.button_data = transmit_data;
         result = esp_now_send(broadcastAddress, (uint8_t *) &outgoingPacket, sizeof(outgoingPacket));
+        prev_transmit_data = outgoingPacket.button_data;
         //Serial.println(transmit_data, BIN);
         if (result == ESP_OK) {
             //Serial.println("Sent with success");
