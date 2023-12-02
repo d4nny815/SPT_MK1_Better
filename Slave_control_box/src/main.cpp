@@ -31,13 +31,13 @@ DigitalInput  ksi_sw(SW_KSI);
 // heartbeat | valid | sw_ign | sw_launch | sw_oxygen | sw_fuel | launch_btn | ksi
 uint8_t prev_transmit_data = 0x00; 
 uint8_t transmit_data = 0x00;
-const u_int8_t bit_ksi = 1;
+const u_int8_t bit_ksi = 1 <<6;
 const u_int8_t bit_launch_btn = 1 << 1;
 const u_int8_t bit_sw_fuel = 1 << 2;
 const u_int8_t bit_sw_oxygen = 1 << 3;
 const u_int8_t bit_sw_launch = 1 << 4;
 const u_int8_t bit_sw_ign = 1 << 5;
-const u_int8_t bit_valid = 1 << 6;
+//const u_int8_t bit_valid = 1;
 u_int8_t bit_heartbeat = 1 << 7;
 
 unsigned long cur_time;
@@ -104,7 +104,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
 
 void setup() {
   	Serial.begin(230400);
-	transmit_data |= bit_valid;
+	//transmit_data |= bit_valid;
   	transmit_data |= bit_heartbeat;
 
 	// TODO: WATCHDOG SETUP
@@ -160,7 +160,7 @@ void loop() {
     }
 
     cur_time = millis();
-    if (cur_time - prev_time_sent >= transmit_time ) {
+    if (cur_time - prev_time_sent >= transmit_time) {
         prev_time_sent = cur_time;
         outgoingPacket.button_data = transmit_data;
         result = esp_now_send(broadcastAddress, (uint8_t *) &outgoingPacket, sizeof(outgoingPacket));
