@@ -63,7 +63,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   	memcpy(&incomingPacket, incomingData, sizeof(incomingPacket));
   	comms = incomingPacket.button_data;
 	if (comms & bit_heartbeat) heartbeart_counter = 0; // clear heartbeat counter
-//	Serial.println(comms, BIN);
+	Serial.println(comms, BIN);
 }
 
 
