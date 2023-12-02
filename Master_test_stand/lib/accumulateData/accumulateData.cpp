@@ -29,7 +29,8 @@ typedef struct {
 #define MAX_BUFFER_IDX 6
 outgoingPacket outPacket[MAX_BUFFER_IDX];
 uint8_t buffer_index;
-uint8_t receiverAddr[] = {0x08, 0xd1, 0xf9, 0xef, 0x32, 0x84};  // MAC Address of the MK1
+uint8_t receiverAddr[] = {0x40, 0x22, 0xd8, 0x3c, 0x37, 0xfc}; // MAC Address of the MK1
+
 
 // setup for butterworth filters
 const double f_s = 100; // Hz
@@ -164,10 +165,8 @@ void set_start_time() {
 //     }
 // }
 
-const int delay_rate = 1 / portTICK_PERIOD_MS; // TODO: change back to 5ms
+const int delay_rate = 50 / portTICK_PERIOD_MS; // TODO: change back to 5ms
 void accumulate_data(void* parameter) { 
-    
-    
     for (;;) {
         outPacket[buffer_index].time = millis() - start_time;
         
@@ -206,27 +205,29 @@ void accumulate_data(void* parameter) {
         loadcell_value = constrain(loadcell_value, minVolt_420, maxVolt_420);
         outPacket[buffer_index].loadcell = map(loadcell_filter(loadcell_value), minVolt_420, maxVolt_420, MIN_THRUST_LBS, MAX_THRUST_LBS);
 
-        Serial.printf("%lu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu\n",
-            outPacket[buffer_index].time,
-            outPacket[buffer_index].ducer1,
-            outPacket[buffer_index].ducer2,
-            outPacket[buffer_index].ducer3,
-            outPacket[buffer_index].ducer4,
-            outPacket[buffer_index].ducer5,
-            outPacket[buffer_index].ducer6,
-            outPacket[buffer_index].ducer7,
-            outPacket[buffer_index].ducer8,
-            outPacket[buffer_index].therm1,
-            outPacket[buffer_index].therm2,
-            outPacket[buffer_index].therm3,
-            outPacket[buffer_index].therm4,
-            outPacket[buffer_index].therm5,
-            outPacket[buffer_index].therm6,
-            outPacket[buffer_index].loadcell);
-            
-        if (++buffer_index == MAX_BUFFER_IDX) {
+        // Serial.printf("%lu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu\n",
+        //     outPacket[buffer_index].time,
+        //     outPacket[buffer_index].ducer1,
+        //     outPacket[buffer_index].ducer2,
+        //     outPacket[buffer_index].ducer3,
+        //     outPacket[buffer_index].ducer4,
+        //     outPacket[buffer_index].ducer5,
+        //     outPacket[buffer_index].ducer6,
+        //     outPacket[buffer_index].ducer7,
+        //     outPacket[buffer_index].ducer8,
+        //     outPacket[buffer_index].therm1,
+        //     outPacket[buffer_index].therm2,
+        //     outPacket[buffer_index].therm3,
+        //     outPacket[buffer_index].therm4,
+        //     outPacket[buffer_index].therm5,
+        //     outPacket[buffer_index].therm6,
+        //     outPacket[buffer_index].loadcell);
+
+        buffer_index++;    
+        if (buffer_index == 7) {
             buffer_index = 0;
-            esp_now_send(receiverAddr, (uint8_t *) &outPacket, sizeof(outPacket));        
+            esp_now_send(receiverAddr, (uint8_t *) &outPacket, sizeof(outPacket));
+
         }
         vTaskDelay(delay_rate);
     }

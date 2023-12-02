@@ -16,8 +16,8 @@ DigitalOutput valve2(VALVE2_PIN);
 DigitalOutput valve3(VALVE3_PIN);
 DigitalOutput valve4(VALVE4_PIN);
 DigitalOutput estop_enable(ESTOP_ENABLE_PIN);
-SoleinoidValve oxygen_valve(OXYGEN_VALVE_PIN, 100, 60);
-SoleinoidValve fuel_valve(FUEL_VALUE_PIN, 100, 60);
+SoleinoidValve oxygen_valve(OXYGEN_VALVE_PIN, 55, 30);
+SoleinoidValve fuel_valve(FUEL_VALUE_PIN, 55, 30);
 
 
 // * State Machine
@@ -35,13 +35,13 @@ bool first_time_in_state = true;
 uint8_t comms = 0x00;
 uint8_t prev_comms = 0x00;
 bool  comms_changed = true;
-const u_int8_t bit_ksi = 1 << 0;
+const u_int8_t bit_ksi = 1 << 6;
 const u_int8_t bit_launch_btn = 1 << 1;
 const u_int8_t bit_sw_fuel = 1 << 2;
 const u_int8_t bit_sw_oxygen = 1 << 3;
 const u_int8_t bit_sw_launch = 1 << 4;
 const u_int8_t bit_sw_ign = 1 << 5;
-const u_int8_t bit_valid = 1 << 6;
+// const u_int8_t bit_valid = 1 << 6;
 const u_int8_t bit_heartbeat = 1 << 7;
 
 uint8_t heartbeart_counter = 0;
@@ -54,7 +54,8 @@ typedef struct {
 incomingPacket_t incomingPacket;
 
 esp_now_peer_info_t peerInfo;
-uint8_t broadcastAddress[] = {0x08, 0xd1, 0xf9, 0xef, 0x32, 0x84};  // MAC Address of the Control Box
+uint8_t broadcastAddress[] = {0x40, 0x22, 0xd8, 0x3c, 0x37, 0xfc}; // MAC Address of the MK1
+
 esp_err_t result;
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
   	// Serial.print("\r\nLast Packet Send Status:\t");
@@ -183,6 +184,7 @@ void ksi_state () {
 	return;
 }
 
+bool ign_sparked = false;
 void launch_state () {
 	if (first_time_in_state) {
 		Serial.printf("LAUNCH entry\n");
@@ -212,8 +214,16 @@ void launch_state () {
 		fuel_valve.close();
 	}
 
-	if ((comms & bit_sw_ign)) ign_wire.turn_on();	
-	else ign_wire.turn_off();
+	if ((comms & bit_sw_ign) && !ign_sparked) {
+		ign_wire.turn_on();	
+		vTaskDelay(2 / portTICK_PERIOD_MS);
+		ign_wire.turn_off();
+		ign_sparked = true;
+	} 
+	else  {
+		ign_sparked = false;
+		ign_wire.turn_off();
+	}
 
 	return;
 }
@@ -265,10 +275,10 @@ void loop() {
 		STATE = STATE_FAIL;
 	}
 
-	if (Serial.available()) { // Commands without control box
-		comms = Serial.read();
-		Serial.println(comms, BIN);
-	}
+	// if (Serial.available()) { // Commands without control box
+	// 	comms = Serial.read();
+	// 	Serial.println(comms, BIN);
+	// }
 
 	switch (STATE) {
 		case STATE_POWERON:
@@ -301,7 +311,8 @@ void loop() {
 			break;
 		case STATE_FAIL:
 			fail_state();
-			if (comms == 0xC0 && digitalRead(ESTOP_SENSE)) {
+
+			if (comms == 0x80 && digitalRead(ESTOP_SENSE)) {
 				STATE = STATE_POWERON;
 				first_time_in_state = true;
 			}

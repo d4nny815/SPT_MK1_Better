@@ -3,7 +3,7 @@
 #include "WiFi.h"
  
 void setup(){
-  	Serial.begin(9600);
+  	Serial.begin(230400);
   	WiFi.mode(WIFI_MODE_STA);
 }
  
