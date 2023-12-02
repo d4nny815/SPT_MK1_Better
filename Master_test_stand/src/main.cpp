@@ -30,6 +30,7 @@ enum SystemState {
 };
 SystemState STATE;
 bool first_time_in_state = true;
+const int MAIN_LOOP_RATE = 30 / portTICK_PERIOD_MS; 
 
 // * Control Signals
 uint8_t comms = 0x00;
@@ -70,7 +71,6 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
 
 void setup() {
 	Serial.begin(230400);
-
 
 	// TODO: Setup Watchdog Timer
 
@@ -179,6 +179,7 @@ void ksi_state () {
 }
 
 bool ign_sparked = false;
+const int VALVE_DELAY_MS = 80 / portTICK_PERIOD_MS;
 void launch_state () {
 	if (first_time_in_state) {
 		Serial.printf("LAUNCH entry\n");
@@ -198,7 +199,7 @@ void launch_state () {
 	if ((comms & bit_sw_launch)) {
 		// TODO: add delay here oxygen -> 100ms -> fuel
 		oxygen_valve.open(); 
-		vTaskDelay(40 / portTICK_PERIOD_MS);
+		vTaskDelay(VALVE_DELAY_MS);
 		fuel_valve.open();
 	}
 	else {
@@ -207,8 +208,8 @@ void launch_state () {
 	}
 
 	if ((comms & bit_sw_ign)) {
-		ign_wire.toggle();
-
+		// ign_wire.toggle();
+		ign_wire.turn_on();
 	} 
 	else  {
 		ign_wire.turn_off();
@@ -273,7 +274,7 @@ void loop() {
 		case STATE_POWERON:
 			power_on_state();
 
-			if (comms & bit_ksi) {
+			if (comms == (bit_ksi | bit_heartbeat)) {
 				STATE = STATE_KSI;
 				first_time_in_state = true;
 			}
@@ -314,5 +315,5 @@ void loop() {
 			STATE = STATE_FAIL;
 			break;
 	}
-	vTaskDelay(30 / portTICK_PERIOD_MS);
+	vTaskDelay(MAIN_LOOP_RATE);
 }
