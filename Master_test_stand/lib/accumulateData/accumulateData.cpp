@@ -165,7 +165,7 @@ void set_start_time() {
 //     }
 // }
 
-const int delay_rate = 50 / portTICK_PERIOD_MS; // TODO: change back to 5ms
+const int delay_rate = 2 / portTICK_PERIOD_MS; // TODO: change back to 5ms
 void accumulate_data(void* parameter) { 
     for (;;) {
         outPacket[buffer_index].time = millis() - start_time;
@@ -204,7 +204,6 @@ void accumulate_data(void* parameter) {
         adc2_get_raw(LOADCELL_PIN, ADC_WIDTH_BIT_13, &loadcell_value);
         loadcell_value = constrain(loadcell_value, minVolt_420, maxVolt_420);
         outPacket[buffer_index].loadcell = map(loadcell_filter(loadcell_value), minVolt_420, maxVolt_420, MIN_THRUST_LBS, MAX_THRUST_LBS);
-
         // Serial.printf("%lu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu,%hu\n",
         //     outPacket[buffer_index].time,
         //     outPacket[buffer_index].ducer1,
@@ -222,10 +221,12 @@ void accumulate_data(void* parameter) {
         //     outPacket[buffer_index].therm5,
         //     outPacket[buffer_index].therm6,
         //     outPacket[buffer_index].loadcell);
+        
 
         buffer_index++;    
-        if (buffer_index == 7) {
+        if (buffer_index == 6) {
             buffer_index = 0;
+            
             esp_now_send(receiverAddr, (uint8_t *) &outPacket, sizeof(outPacket));
 
         }

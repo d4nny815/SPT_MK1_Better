@@ -2,7 +2,7 @@ clc; clear; close all
 
 
 %% Diagram
-input_file = '11.18_testingComms_run1_formatted.csv'
+input_file = '12.1.23_dataCollection_run1_formatted.csv'
 [pathstr, name, ext] = fileparts(input_file);
 
 data = readmatrix(input_file);

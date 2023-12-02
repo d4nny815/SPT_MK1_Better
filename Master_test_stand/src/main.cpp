@@ -33,8 +33,6 @@ bool first_time_in_state = true;
 
 // * Control Signals
 uint8_t comms = 0x00;
-uint8_t prev_comms = 0x00;
-bool  comms_changed = true;
 const u_int8_t bit_ksi = 1 << 6;
 const u_int8_t bit_launch_btn = 1 << 1;
 const u_int8_t bit_sw_fuel = 1 << 2;
@@ -63,11 +61,9 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 }
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   	memcpy(&incomingPacket, incomingData, sizeof(incomingPacket));
-	prev_comms = comms;
   	comms = incomingPacket.button_data;
-	comms_changed = comms != prev_comms;
 	if (comms & bit_heartbeat) heartbeart_counter = 0; // clear heartbeat counter
-	// Serial.println(comms, BIN);
+//	Serial.println(comms, BIN);
 }
 
 
@@ -95,7 +91,7 @@ void setup() {
 	STATE = STATE_FAIL;
 	Serial.println("||||||||Setup complete||||||||");
 	set_start_time();
-	xTaskCreate(accumulate_data, "accumulate_data", 2048, NULL, 2, NULL);
+	xTaskCreate(accumulate_data, "accumulate_data", 2048, NULL, 1, NULL);
 	// vTaskDelete(NULL); // TODO: delete setup task
 }
 
@@ -163,8 +159,6 @@ void ksi_state () {
 		first_time_in_state = false;
 	}
 
-	if (!comms_changed) return;
-
 	if ((comms & bit_sw_fuel) && (comms & bit_sw_oxygen)) {
 		oxygen_valve.close();
 		fuel_valve.close();
@@ -201,12 +195,10 @@ void launch_state () {
 		first_time_in_state = false;
 	}
 	
-	if (!comms_changed) return;
-
 	if ((comms & bit_sw_launch)) {
 		// TODO: add delay here oxygen -> 100ms -> fuel
 		oxygen_valve.open(); 
-		vTaskDelay(80 / portTICK_PERIOD_MS);
+		vTaskDelay(40 / portTICK_PERIOD_MS);
 		fuel_valve.open();
 	}
 	else {
@@ -214,14 +206,11 @@ void launch_state () {
 		fuel_valve.close();
 	}
 
-	if ((comms & bit_sw_ign) && !ign_sparked) {
-		ign_wire.turn_on();	
-		vTaskDelay(2 / portTICK_PERIOD_MS);
-		ign_wire.turn_off();
-		ign_sparked = true;
+	if ((comms & bit_sw_ign)) {
+		ign_wire.toggle();
+
 	} 
 	else  {
-		ign_sparked = false;
 		ign_wire.turn_off();
 	}
 
