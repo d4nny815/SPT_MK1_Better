@@ -178,7 +178,6 @@ void ksi_state () {
 	return;
 }
 
-bool ign_sparked = false;
 const int VALVE_DELAY_MS = 80 / portTICK_PERIOD_MS;
 void launch_state () {
 	if (first_time_in_state) {
