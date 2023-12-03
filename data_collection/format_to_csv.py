@@ -26,6 +26,7 @@ def makeCSV(input_file_name):
         try:
             time = int(line[0])
             # gets rid of random outliers from weird transmissions
+            if int(line[1]) < 0: continue
             if int(line[1]) > 1000: continue
             if int(line[2]) > 1000: continue
             if int(line[3]) > 1000: continue
@@ -61,11 +62,13 @@ def makeGraph(input_file):
     thermistor_names = ['thermistor1', 'thermistor2', 'thermistor3', 'thermistor4', 'thermistor5', 'thermistor6']
     thrust_name = ['thrust']
 
+    # main graph
     df = pd.read_csv(input_file, usecols=headers)
-    plt.figure("all metrics")
+    plt.figure("All Graphs")
     plt.subplot(311)
     plt.ylabel("Pressure (psi)")
     plt.xlabel("Time(ms)")
+    
     plt.plot(df.time_ms, df.fuel_pressure_psi, df.time_ms, df.chamber_pressure_psi,  df.time_ms, df.oxygen_pressure_psi, \
         df.time_ms, df.ducer4_psi, df.time_ms, df.ducer5_psi, df.time_ms, df.ducer6_psi, df.time_ms, df.ducer7_psi, df.time_ms, df.ducer8_psi)
     plt.legend(pressure_names)
@@ -83,34 +86,36 @@ def makeGraph(input_file):
     plt.subplot(313)
     plt.ylabel("Thrust (lbs)")
     plt.xlabel("Time(ms)")
-    plt.plot(df.time_ms, df.loadcell_lbs, 'b')
+    plt.plot(df.time_ms, df.loadcell_lbs)
     plt.legend(thrust_name)
     plt.grid()
    
     plt.savefig(f"{input_file.rstrip(".csv")}.png")
     
-    
-    plt.figure("pressure")
+    plt.figure("Pressure Graph")
     plt.ylabel("Pressure (psi)")
     plt.xlabel("Time(ms)")
     plt.plot(df.time_ms, df.fuel_pressure_psi, df.time_ms, df.chamber_pressure_psi,  df.time_ms, df.oxygen_pressure_psi, \
         df.time_ms, df.ducer4_psi, df.time_ms, df.ducer5_psi, df.time_ms, df.ducer6_psi, df.time_ms, df.ducer7_psi, df.time_ms, df.ducer8_psi)
     plt.legend(pressure_names)
     plt.grid()
+    plt.savefig(f"{input_file.rstrip(".csv")}_pressure.png")
     
-    plt.figure("temps")
+    plt.figure("Temps Graph")
     plt.ylabel("Temperature (C)")
     plt.xlabel("Time(ms)")
     plt.plot(df.time_ms, df.thermistor1_C, df.time_ms, df.thermistor2_C, df.time_ms, df.thermistor3_C, df.time_ms, df.thermistor4_C, df.time_ms,\
         df.thermistor5_C, df.time_ms, df.thermistor6_C)
     plt.legend(thermistor_names)
+    plt.savefig(f"{input_file.rstrip(".csv")}_temps.png")
     plt.grid()
     
-    plt.figure("thrust")
+    plt.figure("Thrust Graph")
     plt.ylabel("Thrust (lbs)")
     plt.xlabel("Time(ms)")
     plt.plot(df.time_ms, df.loadcell_lbs, 'b')
     plt.legend(thrust_name)
+    plt.savefig(f"{input_file.rstrip(".csv")}_thrust.png")
     plt.grid()
     
     plt.show()
@@ -127,7 +132,7 @@ def main():
     except:
         print("dir exist")
     shutil.copy2(input_file_name, dir_name)
-    os.remove(input_file_name)
+    # os.remove(input_file_name)
     os.chdir(dir_name)
     output_file_name = makeCSV(input_file_name)
     makeGraph(output_file_name)
