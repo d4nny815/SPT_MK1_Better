@@ -1,4 +1,4 @@
-Port = usbserial-0001
+Port = COM11
 BaudRate = 230400
 DataBits = 8
 Parity = N
@@ -44,7 +44,7 @@ LoopbackRXData = false
 IgnoreFramingErrors = true
 IgnoreBreakCondition = true
 RXBufferSize = 10000
-RXDataTimeStamp = true
+RXDataTimeStamp = false
 RXDataTimeStampFormat = Time+Millis
 RXDataTimeStampWaitForEOL = false
 CaptureFormat = Raw
@@ -60,7 +60,7 @@ CaptureFileStaysOpen = true
 CaptureAutostart = false
 CaptureAutoAppend = false
 CaptureAutoFilename = 
-CapturePath = /Applications
+CapturePath = C:\Users\nlkat\Downloads\CoolTermWin64Bit\CoolTermWin64Bit\
 TerminateSendString = false
 TerminationString = 0D 0A
 TXCharDelayEnabled = false
@@ -76,13 +76,13 @@ WaitForRemoteEcho = false
 RemoteEchoTimeout = 1000000
 XmitWaitEnable = false
 SendTextSoundEnable = false
-TextFont = Monaco
+TextFont = Courier
 TextFontSize = 0
 InputFontSize = 0
 TextFontColor = &h00000000
 CondenseLines = false
 TextBackgroundColor = &h00FFFFFF
-HexFont = Monaco
+HexFont = Courier
 HexFontSize = 0
 ShowToolbar = true
 ShowToolbarButtonLabels = true
@@ -135,5 +135,11 @@ ChartTraceProperties = 21:Label=Trace 22	Color=&h0000CCCC	Style=0	Width=1	MStyle
 ChartTraceProperties = 22:Label=Trace 23	Color=&h00FF00FF	Style=0	Width=1	MStyle=8	Scale=0	Visible=True
 ChartTraceProperties = 23:Label=Trace 24	Color=&h00DDDD00	Style=0	Width=1	MStyle=8	Scale=0	Visible=True
 ChartTraceProperties = 24:Label=Trace 25	Color=&h00942192	Style=0	Width=1	MStyle=8	Scale=0	Visible=True
+ChartTraceProperties = 25:Label=Trace 26	Color=&h00FFB600	Style=0	Width=1	MStyle=8	Scale=0	Visible=True
+ChartTraceProperties = 26:Label=Trace 27	Color=&h00AA7942	Style=0	Width=1	MStyle=8	Scale=0	Visible=True
+ChartTraceProperties = 27:Label=Trace 28	Color=&h000000FF	Style=0	Width=1	MStyle=8	Scale=0	Visible=True
+ChartTraceProperties = 28:Label=Trace 29	Color=&h0000CC00	Style=0	Width=1	MStyle=8	Scale=0	Visible=True
+ChartTraceProperties = 29:Label=Trace 30	Color=&h00FF0000	Style=0	Width=1	MStyle=8	Scale=0	Visible=True
+ChartTraceProperties = 30:Label=Trace 31	Color=&h0000CCCC	Style=0	Width=1	MStyle=8	Scale=0	Visible=True
 KeepOnTop = false
-WindowPosition = 8,172,1440,734
+WindowPosition = 0,97,1536,727
