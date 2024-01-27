@@ -196,7 +196,6 @@ void launch_state () {
 	}
 	
 	if ((comms & bit_sw_launch)) {
-		// TODO: add delay here oxygen -> 100ms -> fuel
 		oxygen_valve.open(); 
 		vTaskDelay(VALVE_DELAY_MS);
 		fuel_valve.open();
@@ -207,7 +206,7 @@ void launch_state () {
 	}
 
 	if ((comms & bit_sw_ign)) {
-		// ign_wire.toggle();
+		// ign_wire.toggle(); // <- for spark plug :3
 		ign_wire.turn_on();
 	} 
 	else  {
