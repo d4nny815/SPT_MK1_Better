@@ -89,8 +89,10 @@ def makeGraph(input_file):
     plt.plot(df.time_ms, df.loadcell_lbs)
     plt.legend(thrust_name)
     plt.grid()
+    
+    file_name = input_file.rstrip(".csv")
    
-    plt.savefig(f"{input_file.rstrip(".csv")}.png")
+    plt.savefig(f"{file_name}.png")
     
     plt.figure("Pressure Graph")
     plt.ylabel("Pressure (psi)")
@@ -99,7 +101,7 @@ def makeGraph(input_file):
         df.time_ms, df.ducer4_psi, df.time_ms, df.ducer5_psi, df.time_ms, df.ducer6_psi, df.time_ms, df.ducer7_psi, df.time_ms, df.ducer8_psi)
     plt.legend(pressure_names)
     plt.grid()
-    plt.savefig(f"{input_file.rstrip(".csv")}_pressure.png")
+    plt.savefig(f"{file_name}_pressure.png")
     
     plt.figure("Temps Graph")
     plt.ylabel("Temperature (C)")
@@ -107,7 +109,7 @@ def makeGraph(input_file):
     plt.plot(df.time_ms, df.thermistor1_C, df.time_ms, df.thermistor2_C, df.time_ms, df.thermistor3_C, df.time_ms, df.thermistor4_C, df.time_ms,\
         df.thermistor5_C, df.time_ms, df.thermistor6_C)
     plt.legend(thermistor_names)
-    plt.savefig(f"{input_file.rstrip(".csv")}_temps.png")
+    plt.savefig(f"{file_name}_temps.png")
     plt.grid()
     
     plt.figure("Thrust Graph")
@@ -115,7 +117,7 @@ def makeGraph(input_file):
     plt.xlabel("Time(ms)")
     plt.plot(df.time_ms, df.loadcell_lbs, 'b')
     plt.legend(thrust_name)
-    plt.savefig(f"{input_file.rstrip(".csv")}_thrust.png")
+    plt.savefig(f"{file_name}_thrust.png")
     plt.grid()
     
     plt.show()
