@@ -14,7 +14,7 @@ class DigitalInput {
         bool _last_btn_state = false;
         unsigned long _cur_time;
         unsigned long _prev_time_check;
-        unsigned long _debounce_time_us = 200;
+        unsigned long _debounce_time_us = 300;
     public:
         DigitalInput(int pin);
         bool read();

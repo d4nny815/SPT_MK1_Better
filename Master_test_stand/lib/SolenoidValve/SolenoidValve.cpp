@@ -47,9 +47,8 @@ void SoleinoidValve::open() {
  * @brief turn off the solenoid valve
 */
 void SoleinoidValve::close() {
-    if (!_IO_state) return;
+    analogWrite(_pin, 0);
     _IO_state = 0;
     _in_pull_in_state = false;
-    analogWrite(_pin, 0);
     return;
 }
